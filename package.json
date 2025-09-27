@@ -1,0 +1,14 @@
+{
+  "name": "file-vault",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A private, self-hosted file storage application for a single owner.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
+
