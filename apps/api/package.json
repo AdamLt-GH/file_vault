@@ -1,0 +1,20 @@
+{
+  "name": "@file-vault/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The backend API for File Vault.",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "express": "5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.5",
+    "@types/node": "22.19.0",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}
+
