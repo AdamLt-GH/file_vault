@@ -9,6 +9,10 @@
   ],
   "engines": {
     "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "dev:api": "npm run dev --workspace @file-vault/api"
   }
 }
-
