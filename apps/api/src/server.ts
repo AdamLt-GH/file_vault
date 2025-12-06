@@ -1,8 +1,10 @@
 import { createServer } from "node:http";
 
 import { createApp } from "./app.js";
+import { loadEnvironment } from "./config/environment.js";
 
-const port = 3000;
+const environment = loadEnvironment();
+const port = environment.API_PORT;
 const app = createApp();
 const server = createServer(app);
 
