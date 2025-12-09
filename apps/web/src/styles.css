@@ -1,0 +1,97 @@
+:root {
+  color: #172033;
+  background: #eef3f8;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.welcome-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  background:
+    radial-gradient(circle at top left, rgb(45 122 246 / 18%), transparent 35%),
+    #eef3f8;
+}
+
+.welcome-card {
+  width: min(100%, 560px);
+  padding: 48px;
+  border: 1px solid rgb(151 169 193 / 35%);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 24px 70px rgb(41 57 83 / 14%);
+}
+
+.vault-mark {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 32px;
+  place-items: center;
+  border-radius: 15px;
+  color: #ffffff;
+  background: #2563eb;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #2563eb;
+  font-size: 0.8rem;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  color: #111827;
+  font-size: clamp(2.4rem, 8vw, 4rem);
+  letter-spacing: -0.055em;
+  line-height: 1;
+}
+
+.welcome-copy {
+  max-width: 42ch;
+  margin: 24px 0;
+  color: #59657a;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.build-note {
+  display: inline-flex;
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: #2353a8;
+  background: #e8f0ff;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+@media (max-width: 520px) {
+  .welcome-card {
+    padding: 32px 24px;
+  }
+}
