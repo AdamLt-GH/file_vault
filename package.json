@@ -13,6 +13,7 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "dev:api": "npm run dev --workspace @file-vault/api"
+    "dev:api": "npm run dev --workspace @file-vault/api",
+    "dev:web": "npm run dev --workspace @file-vault/web"
   }
 }
