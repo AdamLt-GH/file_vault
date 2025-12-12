@@ -12,6 +12,9 @@
   },
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f database",
+    "db:up": "docker compose up -d database",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "dev:api": "npm run dev --workspace @file-vault/api",
     "dev:web": "npm run dev --workspace @file-vault/web"
