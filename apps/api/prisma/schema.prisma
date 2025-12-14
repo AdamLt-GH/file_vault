@@ -6,3 +6,53 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model AdminUser {
+  id           String       @id @default(uuid()) @db.Uuid
+  email        String       @unique @db.VarChar(320)
+  passwordHash String       @map("password_hash")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  folders      Folder[]
+  files        StoredFile[]
+
+  @@map("admin_users")
+}
+
+model Folder {
+  id             String       @id @default(uuid()) @db.Uuid
+  name           String       @db.VarChar(255)
+  parentFolderId String?      @map("parent_folder_id") @db.Uuid
+  ownerId        String       @map("owner_id") @db.Uuid
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  parent         Folder?      @relation("FolderTree", fields: [parentFolderId], references: [id], onDelete: Restrict)
+  children       Folder[]     @relation("FolderTree")
+  owner          AdminUser    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  files          StoredFile[]
+
+  @@unique([ownerId, parentFolderId, name])
+  @@index([ownerId, parentFolderId])
+  @@map("folders")
+}
+
+model StoredFile {
+  id           String    @id @default(uuid()) @db.Uuid
+  originalName String    @map("original_name") @db.VarChar(255)
+  storageKey   String    @unique @map("storage_key") @db.VarChar(255)
+  mimeType     String    @map("mime_type") @db.VarChar(255)
+  extension    String    @db.VarChar(32)
+  sizeBytes    BigInt    @map("size_bytes")
+  checksum     String    @db.Char(64)
+  folderId     String?   @map("folder_id") @db.Uuid
+  ownerId      String    @map("owner_id") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  folder       Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  owner        AdminUser @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, folderId])
+  @@index([ownerId, originalName])
+  @@index([ownerId, createdAt])
+  @@map("stored_files")
+}
