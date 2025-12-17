@@ -56,3 +56,12 @@ model StoredFile {
   @@index([ownerId, createdAt])
   @@map("stored_files")
 }
+
+model UserSession {
+  sid    String   @id @db.VarChar
+  sess   Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire])
+  @@map("user_sessions")
+}
