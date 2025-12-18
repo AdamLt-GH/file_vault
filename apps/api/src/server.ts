@@ -10,7 +10,7 @@ import { bootstrapAdministrator } from "./services/admin-bootstrap.js";
 
 const environment = loadEnvironment();
 const port = environment.API_PORT;
-const app = createApp();
+const app = createApp(environment);
 const server = createServer(app);
 
 async function startApi(): Promise<void> {
