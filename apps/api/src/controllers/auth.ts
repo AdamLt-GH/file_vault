@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 
+import { prisma } from "../database/prisma.js";
 import { authenticateAdministrator } from "../services/auth.js";
 import { loginSchema } from "../validation/auth.js";
 
@@ -49,3 +50,25 @@ export const login: RequestHandler = async (request, response) => {
   });
 };
 
+export const getSession: RequestHandler = async (request, response) => {
+  if (!request.session.userId) {
+    response.status(200).json({ user: null });
+    return;
+  }
+
+  const administrator = await prisma.adminUser.findUnique({
+    where: { id: request.session.userId },
+    select: {
+      id: true,
+      email: true,
+    },
+  });
+
+  if (!administrator) {
+    delete request.session.userId;
+    response.status(200).json({ user: null });
+    return;
+  }
+
+  response.status(200).json({ user: administrator });
+};
