@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 
 import { prisma } from "../database/prisma.js";
 import { authenticateAdministrator } from "../services/auth.js";
+import { regenerateSession, saveSession } from "../services/session.js";
 import { loginSchema } from "../validation/auth.js";
 
 export const login: RequestHandler = async (request, response) => {
@@ -29,21 +30,11 @@ export const login: RequestHandler = async (request, response) => {
     return;
   }
 
-  await new Promise<void>((resolve, reject) => {
-    request.session.regenerate((error) => {
-      if (error) reject(error);
-      else resolve();
-    });
-  });
+  await regenerateSession(request);
 
   request.session.userId = administrator.id;
 
-  await new Promise<void>((resolve, reject) => {
-    request.session.save((error) => {
-      if (error) reject(error);
-      else resolve();
-    });
-  });
+  await saveSession(request);
 
   response.status(200).json({
     user: administrator,
