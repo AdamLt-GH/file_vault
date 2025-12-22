@@ -2,7 +2,11 @@ import type { RequestHandler } from "express";
 
 import { prisma } from "../database/prisma.js";
 import { authenticateAdministrator } from "../services/auth.js";
-import { regenerateSession, saveSession } from "../services/session.js";
+import {
+  destroySession,
+  regenerateSession,
+  saveSession,
+} from "../services/session.js";
 import { loginSchema } from "../validation/auth.js";
 
 export const login: RequestHandler = async (request, response) => {
@@ -62,4 +66,10 @@ export const getSession: RequestHandler = async (request, response) => {
   }
 
   response.status(200).json({ user: administrator });
+};
+
+export const logout: RequestHandler = async (request, response) => {
+  await destroySession(request);
+  response.clearCookie("filevault.sid", { path: "/" });
+  response.status(204).send();
 };
