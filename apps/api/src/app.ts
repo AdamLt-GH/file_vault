@@ -1,4 +1,5 @@
 import express, { type Express } from "express";
+import helmet from "helmet";
 
 import type { Environment } from "./config/environment.js";
 import { errorHandler } from "./middleware/error-handler.js";
@@ -11,6 +12,7 @@ export function createApp(environment: Environment): Express {
   const app = express();
 
   app.disable("x-powered-by");
+  app.use(helmet());
   app.use(express.json({ limit: "1mb" }));
   app.use(createSessionMiddleware(environment));
 
