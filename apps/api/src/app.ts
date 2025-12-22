@@ -1,3 +1,4 @@
+import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
 
@@ -12,6 +13,18 @@ export function createApp(environment: Environment): Express {
   const app = express();
 
   app.disable("x-powered-by");
+
+  if (environment.NODE_ENV === "production") {
+    app.set("trust proxy", 1);
+  }
+
+  app.use(
+    cors({
+      credentials: true,
+      methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      origin: environment.WEB_ORIGIN,
+    }),
+  );
   app.use(helmet());
   app.use(express.json({ limit: "1mb" }));
   app.use(createSessionMiddleware(environment));
