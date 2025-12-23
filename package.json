@@ -17,6 +17,7 @@
     "db:up": "docker compose up -d database",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "dev:api": "npm run dev --workspace @file-vault/api",
-    "dev:web": "npm run dev --workspace @file-vault/web"
+    "dev:web": "npm run dev --workspace @file-vault/web",
+    "test": "npm run test --workspaces --if-present"
   }
 }

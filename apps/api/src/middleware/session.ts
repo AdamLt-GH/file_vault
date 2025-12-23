@@ -6,6 +6,15 @@ import type { Environment } from "../config/environment.js";
 const PostgresSessionStore = connectPgSimple(session);
 
 export function createSessionMiddleware(environment: Environment) {
+  const store =
+    environment.NODE_ENV === "test"
+      ? undefined
+      : new PostgresSessionStore({
+          conString: environment.DATABASE_URL,
+          createTableIfMissing: false,
+          tableName: "user_sessions",
+        });
+
   return session({
     cookie: {
       httpOnly: true,
@@ -18,11 +27,6 @@ export function createSessionMiddleware(environment: Environment) {
     rolling: true,
     saveUninitialized: false,
     secret: environment.SESSION_SECRET,
-    store: new PostgresSessionStore({
-      conString: environment.DATABASE_URL,
-      createTableIfMissing: false,
-      tableName: "user_sessions",
-    }),
+    ...(store ? { store } : {}),
   });
 }
-

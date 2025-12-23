@@ -26,9 +26,12 @@
     "@types/express-session": "1.18.2",
     "@types/node": "22.19.0",
     "@types/pg": "8.15.6",
+    "@types/supertest": "6.0.3",
     "prisma": "6.19.0",
+    "supertest": "7.1.4",
     "tsx": "4.20.6",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.0.14"
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
@@ -38,6 +41,8 @@
     "prisma:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "test": "vitest run",
+    "test:watch": "vitest"
   }
 }
