@@ -97,3 +97,98 @@ h1 {
     padding: 32px 24px;
   }
 }
+
+.login-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+  background:
+    linear-gradient(145deg, rgb(15 35 69 / 8%), transparent 55%),
+    #eef3f8;
+}
+
+.login-card {
+  width: min(100%, 460px);
+  padding: 40px;
+  border: 1px solid #d9e1ec;
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 22px 60px rgb(35 54 82 / 13%);
+}
+
+.login-card h1 {
+  font-size: 2.5rem;
+}
+
+.login-copy {
+  margin: 14px 0 28px;
+  color: #667085;
+  line-height: 1.6;
+}
+
+.login-form {
+  display: grid;
+  gap: 20px;
+}
+
+.field-group {
+  display: grid;
+  gap: 8px;
+}
+
+.field-group label {
+  color: #344054;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.field-group input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #cdd6e3;
+  border-radius: 10px;
+  color: #101828;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.field-group input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgb(37 99 235 / 12%);
+}
+
+.login-form button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 10px;
+  color: #ffffff;
+  background: #2563eb;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.login-form button:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.login-form button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.form-error {
+  margin: -4px 0 0;
+  padding: 11px 12px;
+  border-radius: 9px;
+  color: #a51d2d;
+  background: #fff0f1;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 520px) {
+  .login-card {
+    padding: 32px 24px;
+  }
+}
