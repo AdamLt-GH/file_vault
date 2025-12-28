@@ -20,3 +20,11 @@ export function login(input: LoginInput): Promise<SessionResponse> {
     method: "POST",
   });
 }
+
+export function getSession(): Promise<SessionResponse> {
+  return apiRequest<SessionResponse>("/auth/session");
+}
+
+export function logout(): Promise<void> {
+  return apiRequest<void>("/auth/logout", { method: "POST" });
+}
