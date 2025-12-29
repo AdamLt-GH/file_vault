@@ -1,7 +1,7 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 
-import { App } from "./App";
 import { ProtectedRoute, SignedOutRoute } from "./features/auth/RouteGuards";
+import { DashboardPage } from "./pages/DashboardPage";
 import { LoginPage } from "./pages/LoginPage";
 
 export const router = createBrowserRouter([
@@ -21,7 +21,7 @@ export const router = createBrowserRouter([
     path: "/dashboard",
     element: (
       <ProtectedRoute>
-        <App />
+        <DashboardPage />
       </ProtectedRoute>
     ),
   },
