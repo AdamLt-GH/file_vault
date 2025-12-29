@@ -192,3 +192,12 @@ h1 {
     padding: 32px 24px;
   }
 }
+
+.session-loading {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  color: #59657a;
+  background: #eef3f8;
+  font-weight: 650;
+}
