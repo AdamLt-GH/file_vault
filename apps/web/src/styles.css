@@ -201,3 +201,133 @@ h1 {
   background: #eef3f8;
   font-weight: 650;
 }
+
+.app-shell {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: 250px minmax(0, 1fr);
+  background: #f5f7fa;
+}
+
+.sidebar {
+  padding: 28px 20px;
+  color: #dbe7f8;
+  background: #132038;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 28px;
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+}
+
+.sidebar-brand .vault-mark {
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  border-radius: 12px;
+}
+
+.sidebar-brand strong,
+.sidebar-brand span {
+  display: block;
+}
+
+.sidebar-brand strong {
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.sidebar-brand span {
+  margin-top: 3px;
+  color: #91a1b8;
+  font-size: 0.78rem;
+}
+
+.sidebar nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 28px;
+}
+
+.sidebar-link {
+  padding: 11px 13px;
+  border-radius: 9px;
+  color: #aebdd1;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.sidebar-link:hover,
+.sidebar-link.active {
+  color: #ffffff;
+  background: rgb(62 124 239 / 24%);
+}
+
+.dashboard-shell {
+  min-width: 0;
+  padding: 32px 40px;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #dfe5ed;
+}
+
+.dashboard-header h1 {
+  font-size: 2.2rem;
+}
+
+.account-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.account-email {
+  margin: 0;
+  color: #667085;
+  font-size: 0.88rem;
+}
+
+.logout-button {
+  padding: 9px 13px;
+  border: 1px solid #ccd5e1;
+  border-radius: 9px;
+  color: #344054;
+  background: #ffffff;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.logout-button:hover:not(:disabled) {
+  border-color: #aeb9c8;
+  background: #f8fafc;
+}
+
+.dashboard-content {
+  min-height: 420px;
+  margin-top: 28px;
+  padding: 28px;
+  border: 1px solid #e0e6ee;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgb(42 56 78 / 6%);
+}
+
+.dashboard-content h2 {
+  margin: 0 0 8px;
+  color: #172033;
+}
+
+.dashboard-content p {
+  margin: 0;
+  color: #7a8597;
+}
