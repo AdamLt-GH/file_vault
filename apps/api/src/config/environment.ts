@@ -15,6 +15,7 @@ const environmentSchema = z.object({
     .string()
     .min(32, "Session secret must have at least 32 characters"),
   SESSION_TTL_HOURS: z.coerce.number().int().min(1).max(168).default(24),
+  MAX_UPLOAD_SIZE_MB: z.coerce.number().int().min(1).max(10_240).default(1000),
 });
 
 export type Environment = z.infer<typeof environmentSchema>;
