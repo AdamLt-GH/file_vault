@@ -17,7 +17,7 @@ coverage/
 *.pfx
 
 # Runtime data
-storage/
+/storage/
 uploads/
 postgres-data/
 *.sqlite
@@ -36,4 +36,3 @@ Thumbs.db
 .cache/
 .tmp/
 tmp/
-
