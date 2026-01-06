@@ -10,7 +10,12 @@ export interface StorageProvider {
 export class StorageError extends Error {
   constructor(
     message: string,
-    readonly code: "INVALID_KEY" | "NOT_FOUND" | "WRITE_FAILED",
+    readonly code:
+      | "DELETE_FAILED"
+      | "INVALID_KEY"
+      | "NOT_FOUND"
+      | "READ_FAILED"
+      | "WRITE_FAILED",
     options?: ErrorOptions,
   ) {
     super(message, options);

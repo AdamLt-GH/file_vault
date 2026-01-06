@@ -5,12 +5,12 @@ import { type Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { randomUUID } from "node:crypto";
 
-import { StorageError } from "./storage-provider.js";
+import { StorageError, type StorageProvider } from "./storage-provider.js";
 
 const storageKeyPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export class LocalFilesystemStorage {
+export class LocalFilesystemStorage implements StorageProvider {
   private readonly filesDirectory: string;
 
   constructor(storageDirectory: string) {
@@ -49,6 +49,37 @@ export class LocalFilesystemStorage {
     return createReadStream(storagePath);
   }
 
+  async delete(storageKey: string): Promise<void> {
+    const storagePath = this.getStoragePath(storageKey);
+
+    try {
+      await rm(storagePath);
+    } catch (error) {
+      if (isMissingFileError(error)) {
+        throw new StorageError("The stored file does not exist", "NOT_FOUND");
+      }
+
+      throw new StorageError("The stored file could not be deleted", "DELETE_FAILED", {
+        cause: error,
+      });
+    }
+  }
+
+  async exists(storageKey: string): Promise<boolean> {
+    const storagePath = this.getStoragePath(storageKey);
+
+    try {
+      await access(storagePath);
+      return true;
+    } catch (error) {
+      if (isMissingFileError(error)) return false;
+
+      throw new StorageError("The stored file could not be checked", "READ_FAILED", {
+        cause: error,
+      });
+    }
+  }
+
   private getStoragePath(storageKey: string): string {
     if (!storageKeyPattern.test(storageKey)) {
       throw new StorageError("The storage key is not valid", "INVALID_KEY");
@@ -56,4 +87,8 @@ export class LocalFilesystemStorage {
 
     return resolve(this.filesDirectory, storageKey);
   }
+}
+
+function isMissingFileError(error: unknown): boolean {
+  return error instanceof Error && "code" in error && error.code === "ENOENT";
 }
