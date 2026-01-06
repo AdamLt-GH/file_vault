@@ -11,6 +11,7 @@ const environmentSchema = z.object({
   FILEVAULT_ADMIN_PASSWORD: z
     .string()
     .min(12, "Administrator password must have at least 12 characters"),
+  FILEVAULT_STORAGE_PATH: z.string().min(1).default("./storage"),
   SESSION_SECRET: z
     .string()
     .min(32, "Session secret must have at least 32 characters"),
