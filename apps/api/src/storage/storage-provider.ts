@@ -11,8 +11,9 @@ export class StorageError extends Error {
   constructor(
     message: string,
     readonly code: "INVALID_KEY" | "NOT_FOUND" | "WRITE_FAILED",
+    options?: ErrorOptions,
   ) {
-    super(message);
+    super(message, options);
     this.name = "StorageError";
   }
 }
