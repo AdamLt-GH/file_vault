@@ -24,6 +24,8 @@ const environment: Environment = {
   DATABASE_URL: "postgresql://test:test@localhost:5432/test",
   FILEVAULT_ADMIN_EMAIL: "admin@example.com",
   FILEVAULT_ADMIN_PASSWORD: "test-password-only",
+  FILEVAULT_STORAGE_PATH: "./storage-test",
+  MAX_UPLOAD_SIZE_MB: 10,
   NODE_ENV: "test",
   SESSION_SECRET: "test-session-secret-with-at-least-32-characters",
   SESSION_TTL_HOURS: 24,
