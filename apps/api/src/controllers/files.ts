@@ -27,7 +27,10 @@ export function createUploadFileController({
       stagedUpload = await parseSingleUpload(
         request,
         getMaxUploadSizeBytes(environment),
-        async (upload) => storeUpload(upload, storage),
+        async (upload) => {
+          stagedUpload = await storeUpload(upload, storage);
+          return stagedUpload;
+        },
       );
 
       const file = await prisma.storedFile.create({
@@ -71,4 +74,3 @@ export function createUploadFileController({
     }
   };
 }
-

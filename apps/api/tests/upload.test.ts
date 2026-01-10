@@ -90,4 +90,44 @@ describe("file uploads", () => {
     });
     expect(await readdir(join(storageDirectory, "files"))).toHaveLength(1);
   });
+
+  it("rejects unsupported file types before metadata is saved", async () => {
+    const agent = request.agent(createApp(environment));
+    await agent
+      .post("/api/v1/auth/login")
+      .send({ email: "admin@example.com", password: "correct-password" })
+      .expect(200);
+
+    const response = await agent
+      .post("/api/v1/files/upload")
+      .attach("file", Buffer.from("not allowed"), {
+        contentType: "application/octet-stream",
+        filename: "program.exe",
+      });
+
+    expect(response.status).toBe(415);
+    expect(response.body.error.code).toBe("UNSUPPORTED_FILE_TYPE");
+    expect(mocks.createFile).not.toHaveBeenCalled();
+  });
+
+  it("removes a partial file when the upload is too large", async () => {
+    environment.MAX_UPLOAD_SIZE_MB = 1;
+    const agent = request.agent(createApp(environment));
+    await agent
+      .post("/api/v1/auth/login")
+      .send({ email: "admin@example.com", password: "correct-password" })
+      .expect(200);
+
+    const response = await agent
+      .post("/api/v1/files/upload")
+      .attach("file", Buffer.alloc(1024 * 1024 + 1, "a"), {
+        contentType: "text/plain",
+        filename: "too-large.txt",
+      });
+
+    expect(response.status).toBe(413);
+    expect(response.body.error.code).toBe("FILE_TOO_LARGE");
+    expect(mocks.createFile).not.toHaveBeenCalled();
+    expect(await readdir(join(storageDirectory, "files"))).toHaveLength(0);
+  });
 });

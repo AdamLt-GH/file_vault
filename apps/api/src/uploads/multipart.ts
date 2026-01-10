@@ -28,6 +28,7 @@ export function parseSingleUpload<T>(
 ): Promise<T> {
   return new Promise((resolve, reject) => {
     let fileTask: Promise<T> | undefined;
+    let fileTaskError: unknown;
     let fileWasLimited = false;
     let tooManyFiles = false;
     let parser: Busboy;
@@ -57,7 +58,11 @@ export function parseSingleUpload<T>(
         fileWasLimited = true;
       });
 
-      fileTask = handleFile({ info, stream });
+      fileTask = handleFile({ info, stream }).catch((error: unknown) => {
+        fileTaskError = error;
+        stream.resume();
+        return undefined as T;
+      });
     });
 
     parser.once("filesLimit", () => {
@@ -79,6 +84,10 @@ export function parseSingleUpload<T>(
         }
 
         const result = await fileTask;
+
+        if (fileTaskError) {
+          throw fileTaskError;
+        }
 
         if (fileWasLimited) {
           throw new UploadError("The file is larger than the upload limit", "FILE_TOO_LARGE");
