@@ -1,4 +1,5 @@
 import type { RequestHandler } from "express";
+import { z } from "zod";
 
 import type { Environment } from "../config/environment.js";
 import { getMaxUploadSizeBytes } from "../config/upload-limits.js";
@@ -15,6 +16,36 @@ interface FileControllerDependencies {
   environment: Environment;
   storage: StorageProvider;
 }
+
+const listFilesQuery = z.object({
+  folderId: z.uuid().optional(),
+});
+
+export const listFiles: RequestHandler = async (request, response) => {
+  const query = listFilesQuery.safeParse(request.query);
+
+  if (!query.success) {
+    response.status(400).json({
+      error: { code: "INVALID_QUERY", message: "Folder ID is not valid" },
+    });
+    return;
+  }
+
+  const files = await prisma.storedFile.findMany({
+    where: {
+      folderId: query.data.folderId ?? null,
+      ownerId: request.session.userId!,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  response.status(200).json({
+    files: files.map((file) => ({
+      ...file,
+      sizeBytes: Number(file.sizeBytes),
+    })),
+  });
+};
 
 export function createUploadFileController({
   environment,
