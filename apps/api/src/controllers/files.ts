@@ -1,9 +1,12 @@
 import type { RequestHandler } from "express";
+import { pipeline } from "node:stream/promises";
 import { z } from "zod";
 
 import type { Environment } from "../config/environment.js";
 import { getMaxUploadSizeBytes } from "../config/upload-limits.js";
 import { prisma } from "../database/prisma.js";
+import { createDownloadHeaders } from "../downloads/headers.js";
+import { findOwnedFile } from "../services/files.js";
 import type { StorageProvider } from "../storage/storage-provider.js";
 import { parseSingleUpload, UploadError } from "../uploads/multipart.js";
 import {
@@ -46,6 +49,34 @@ export const listFiles: RequestHandler = async (request, response) => {
     })),
   });
 };
+
+export function createDownloadFileController(
+  storage: StorageProvider,
+): RequestHandler {
+  return async (request, response) => {
+    const fileId = z.uuid().safeParse(request.params.id);
+
+    if (!fileId.success) {
+      response.status(400).json({
+        error: { code: "INVALID_FILE_ID", message: "File ID is not valid" },
+      });
+      return;
+    }
+
+    const file = await findOwnedFile(fileId.data, request.session.userId!);
+
+    if (!file) {
+      response.status(404).json({
+        error: { code: "FILE_NOT_FOUND", message: "File not found" },
+      });
+      return;
+    }
+
+    const stream = await storage.open(file.storageKey);
+    response.set(createDownloadHeaders(file));
+    await pipeline(stream, response);
+  };
+}
 
 export function createUploadFileController({
   environment,

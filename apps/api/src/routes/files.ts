@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import type { Environment } from "../config/environment.js";
 import {
+  createDownloadFileController,
   createUploadFileController,
   listFiles,
 } from "../controllers/files.js";
@@ -15,6 +16,11 @@ export function createFilesRouter(
   const router = Router();
 
   router.get("/", requireAuthentication, listFiles);
+  router.get(
+    "/:id/download",
+    requireAuthentication,
+    createDownloadFileController(storage),
+  );
 
   router.post(
     "/upload",
