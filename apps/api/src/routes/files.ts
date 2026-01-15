@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import type { Environment } from "../config/environment.js";
 import {
+  createDeleteFileController,
   createDownloadFileController,
   createUploadFileController,
   listFiles,
@@ -21,6 +22,7 @@ export function createFilesRouter(
     requireAuthentication,
     createDownloadFileController(storage),
   );
+  router.delete("/:id", requireAuthentication, createDeleteFileController(storage));
 
   router.post(
     "/upload",
