@@ -1,15 +1,21 @@
 import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Readable } from "node:stream";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createApp } from "../src/app.js";
 import type { Environment } from "../src/config/environment.js";
+import { LocalFilesystemStorage } from "../src/storage/local-filesystem.js";
 
 const mocks = vi.hoisted(() => ({
   authenticate: vi.fn(),
   createFile: vi.fn(),
+  deleteMany: vi.fn(),
+  findFiles: vi.fn(),
+  findOwnedFile: vi.fn(),
+  transaction: vi.fn(),
 }));
 
 vi.mock("../src/services/auth.js", () => ({
@@ -19,7 +25,12 @@ vi.mock("../src/services/auth.js", () => ({
 vi.mock("../src/database/prisma.js", () => ({
   prisma: {
     adminUser: { findUnique: vi.fn() },
-    storedFile: { create: mocks.createFile },
+    storedFile: {
+      create: mocks.createFile,
+      findFirst: mocks.findOwnedFile,
+      findMany: mocks.findFiles,
+    },
+    $transaction: mocks.transaction,
   },
 }));
 
@@ -46,6 +57,9 @@ describe("file uploads", () => {
       id: "1d72a054-5926-494d-84fc-927bd01546a0",
       email: "admin@example.com",
     });
+    mocks.transaction.mockImplementation(async (work) =>
+      work({ storedFile: { deleteMany: mocks.deleteMany } }),
+    );
   });
 
   afterEach(async () => {
@@ -130,4 +144,88 @@ describe("file uploads", () => {
     expect(mocks.createFile).not.toHaveBeenCalled();
     expect(await readdir(join(storageDirectory, "files"))).toHaveLength(0);
   });
+
+  it("lists files from the current folder", async () => {
+    mocks.findFiles.mockResolvedValue([
+      {
+        checksum: "a".repeat(64),
+        createdAt: new Date("2026-01-16T00:00:00.000Z"),
+        extension: "txt",
+        folderId: null,
+        id: "37bff070-71d7-4dc4-b074-bb14f7dcb1e7",
+        mimeType: "text/plain",
+        originalName: "notes.txt",
+        ownerId: "1d72a054-5926-494d-84fc-927bd01546a0",
+        sizeBytes: 13n,
+        storageKey: "7d8a92e8-91f5-4d39-83be-77f5c9810412",
+        updatedAt: new Date("2026-01-16T00:00:00.000Z"),
+      },
+    ]);
+
+    const agent = await createLoggedInAgent(environment);
+    const response = await agent.get("/api/v1/files");
+
+    expect(response.status).toBe(200);
+    expect(response.body.files[0]).toMatchObject({
+      originalName: "notes.txt",
+      sizeBytes: 13,
+    });
+  });
+
+  it("streams an owned file using its display name", async () => {
+    const storageKey = "7d8a92e8-91f5-4d39-83be-77f5c9810412";
+    await new LocalFilesystemStorage(storageDirectory).save(
+      Readable.from("download contents"),
+      storageKey,
+    );
+    mocks.findOwnedFile.mockResolvedValue({
+      mimeType: "text/plain",
+      originalName: "private notes.txt",
+      ownerId: "1d72a054-5926-494d-84fc-927bd01546a0",
+      sizeBytes: 17n,
+      storageKey,
+    });
+
+    const agent = await createLoggedInAgent(environment);
+    const response = await agent.get(
+      "/api/v1/files/37bff070-71d7-4dc4-b074-bb14f7dcb1e7/download",
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.text).toBe("download contents");
+    expect(response.headers["content-disposition"]).toContain(
+      "private%20notes.txt",
+    );
+  });
+
+  it("deletes owned file metadata and its stored contents", async () => {
+    const storageKey = "7d8a92e8-91f5-4d39-83be-77f5c9810412";
+    const storage = new LocalFilesystemStorage(storageDirectory);
+    await storage.save(Readable.from("delete contents"), storageKey);
+    mocks.findOwnedFile.mockResolvedValue({ storageKey });
+    mocks.deleteMany.mockResolvedValue({ count: 1 });
+
+    const agent = await createLoggedInAgent(environment);
+    const response = await agent.delete(
+      "/api/v1/files/37bff070-71d7-4dc4-b074-bb14f7dcb1e7",
+    );
+
+    expect(response.status).toBe(204);
+    expect(await storage.exists(storageKey)).toBe(false);
+    expect(mocks.deleteMany).toHaveBeenCalledWith({
+      where: {
+        id: "37bff070-71d7-4dc4-b074-bb14f7dcb1e7",
+        ownerId: "1d72a054-5926-494d-84fc-927bd01546a0",
+      },
+    });
+  });
 });
+
+async function createLoggedInAgent(environment: Environment) {
+  const agent = request.agent(createApp(environment));
+  await agent
+    .post("/api/v1/auth/login")
+    .send({ email: "admin@example.com", password: "correct-password" })
+    .expect(200);
+  return agent;
+}
