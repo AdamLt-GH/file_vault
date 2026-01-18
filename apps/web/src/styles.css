@@ -331,3 +331,144 @@ h1 {
   margin: 0;
   color: #7a8597;
 }
+
+.file-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #e7ebf1;
+}
+
+.upload-form {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.file-picker {
+  position: relative;
+  display: inline-flex;
+  max-width: 240px;
+  min-height: 40px;
+  align-items: center;
+  padding: 0 13px;
+  overflow: hidden;
+  border: 1px solid #ccd5e1;
+  border-radius: 9px;
+  color: #475467;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.file-picker span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-picker input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.upload-form button {
+  min-height: 40px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 9px;
+  color: #ffffff;
+  background: #2563eb;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.upload-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.upload-error {
+  flex-basis: 100%;
+  color: #b42318;
+  font-size: 0.82rem;
+  text-align: right;
+}
+
+.file-table-wrap {
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+.file-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.file-table th {
+  padding: 11px 12px;
+  color: #667085;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.file-table td {
+  padding: 14px 12px;
+  border-top: 1px solid #edf0f4;
+  color: #596579;
+  vertical-align: middle;
+}
+
+.file-name {
+  display: flex;
+  min-width: 220px;
+  align-items: center;
+  gap: 11px;
+  color: #202c40;
+  font-weight: 650;
+}
+
+.file-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  color: #2756ad;
+  background: #eaf1ff;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.table-action {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.empty-files,
+.file-state {
+  display: grid;
+  min-height: 240px;
+  place-items: center;
+  align-content: center;
+  gap: 7px;
+  color: #7a8597;
+}
+
+.empty-files strong {
+  color: #344054;
+}
+
+.file-state.error {
+  color: #b42318;
+}
