@@ -1,0 +1,74 @@
+import type { RequestHandler } from "express";
+import { z } from "zod";
+
+import {
+  createFolder,
+  FolderError,
+  listFolders,
+} from "../services/folders.js";
+
+const listFoldersQuery = z.object({
+  parentFolderId: z.uuid().optional(),
+});
+
+const createFolderBody = z.object({
+  name: z.string(),
+  parentFolderId: z.uuid().optional(),
+});
+
+export const getFolders: RequestHandler = async (request, response) => {
+  const query = listFoldersQuery.safeParse(request.query);
+
+  if (!query.success) {
+    response.status(400).json({
+      error: { code: "INVALID_QUERY", message: "Parent folder ID is not valid" },
+    });
+    return;
+  }
+
+  const folders = await listFolders(
+    request.session.userId!,
+    query.data.parentFolderId ?? null,
+  );
+
+  response.status(200).json({ folders });
+};
+
+export const postFolder: RequestHandler = async (request, response) => {
+  const body = createFolderBody.safeParse(request.body);
+
+  if (!body.success) {
+    response.status(400).json({
+      error: { code: "INVALID_REQUEST", message: "Folder details are not valid" },
+    });
+    return;
+  }
+
+  try {
+    const folder = await createFolder({
+      name: body.data.name,
+      ownerId: request.session.userId!,
+      ...(body.data.parentFolderId
+        ? { parentFolderId: body.data.parentFolderId }
+        : {}),
+    });
+
+    response.status(201).json({ folder });
+  } catch (error) {
+    if (error instanceof FolderError) {
+      const status =
+        error.code === "DUPLICATE_FOLDER"
+          ? 409
+          : error.code === "FOLDER_NOT_FOUND"
+            ? 404
+            : 400;
+      response.status(status).json({
+        error: { code: error.code, message: error.message },
+      });
+      return;
+    }
+
+    throw error;
+  }
+};
+
