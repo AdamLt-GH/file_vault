@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "../database/prisma.js";
 
 export class FolderError extends Error {
@@ -48,4 +50,57 @@ export async function listFolders(ownerId: string, parentFolderId: string | null
     },
     orderBy: { name: "asc" },
   });
+}
+
+interface CreateFolderInput {
+  name: string;
+  ownerId: string;
+  parentFolderId?: string;
+}
+
+export async function createFolder(input: CreateFolderInput) {
+  const name = validateFolderName(input.name);
+  const parentFolderId = input.parentFolderId ?? null;
+
+  if (parentFolderId) {
+    const parent = await findOwnedFolder(parentFolderId, input.ownerId);
+    if (!parent) {
+      throw new FolderError("Parent folder not found", "FOLDER_NOT_FOUND");
+    }
+  }
+
+  const existingFolder = await prisma.folder.findFirst({
+    where: {
+      name,
+      ownerId: input.ownerId,
+      parentFolderId,
+    },
+    select: { id: true },
+  });
+
+  if (existingFolder) {
+    throw new FolderError(
+      "A folder with this name already exists here",
+      "DUPLICATE_FOLDER",
+    );
+  }
+
+  try {
+    return await prisma.folder.create({
+      data: {
+        name,
+        ownerId: input.ownerId,
+        parentFolderId,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      throw new FolderError(
+        "A folder with this name already exists here",
+        "DUPLICATE_FOLDER",
+      );
+    }
+
+    throw error;
+  }
 }
