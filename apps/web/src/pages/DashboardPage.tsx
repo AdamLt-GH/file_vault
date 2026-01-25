@@ -6,6 +6,7 @@ import { UploadForm } from "../features/files/UploadForm";
 import { useFiles } from "../features/files/useFiles";
 import { FolderList } from "../features/folders/FolderList";
 import { Breadcrumbs } from "../features/folders/Breadcrumbs";
+import { CreateFolderForm } from "../features/folders/CreateFolderForm";
 import { useBreadcrumbs, useFolders } from "../features/folders/useFolders";
 import { useParams } from "react-router-dom";
 
@@ -38,7 +39,10 @@ export function DashboardPage() {
               <h2>Your files</h2>
               <p>{folderId ? "Files in this folder." : "Files at the top level of your vault."}</p>
             </div>
-            <UploadForm />
+            <div className="toolbar-actions">
+              <CreateFolderForm parentFolderId={folderId} />
+              <UploadForm />
+            </div>
           </div>
 
           {files.isPending || folders.isPending ? (

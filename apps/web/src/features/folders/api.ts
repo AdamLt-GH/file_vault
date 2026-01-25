@@ -33,3 +33,13 @@ export function getBreadcrumbs(folderId: string): Promise<BreadcrumbResponse> {
     `/folders/${encodeURIComponent(folderId)}/breadcrumbs`,
   );
 }
+
+export function createFolder(input: {
+  name: string;
+  parentFolderId?: string;
+}): Promise<{ folder: Folder }> {
+  return apiRequest<{ folder: Folder }>("/folders", {
+    body: JSON.stringify(input),
+    method: "POST",
+  });
+}

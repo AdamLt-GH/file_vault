@@ -378,6 +378,55 @@ h1 {
   flex-wrap: wrap;
 }
 
+.toolbar-actions {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.secondary-action,
+.create-folder-form button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #ccd5e1;
+  border-radius: 9px;
+  color: #344054;
+  background: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.create-folder-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.create-folder-form label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.create-folder-form input {
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid #aebbd0;
+  border-radius: 9px;
+}
+
+.create-folder-form [role="alert"] {
+  flex-basis: 100%;
+  color: #b42318;
+  font-size: 0.8rem;
+  text-align: right;
+}
+
 .file-picker {
   position: relative;
   display: inline-flex;
