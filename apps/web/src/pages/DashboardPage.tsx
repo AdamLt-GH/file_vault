@@ -5,7 +5,8 @@ import { FileList } from "../features/files/FileList";
 import { UploadForm } from "../features/files/UploadForm";
 import { useFiles } from "../features/files/useFiles";
 import { FolderList } from "../features/folders/FolderList";
-import { useFolders } from "../features/folders/useFolders";
+import { Breadcrumbs } from "../features/folders/Breadcrumbs";
+import { useBreadcrumbs, useFolders } from "../features/folders/useFolders";
 import { useParams } from "react-router-dom";
 
 export function DashboardPage() {
@@ -13,6 +14,7 @@ export function DashboardPage() {
   const { folderId } = useParams();
   const files = useFiles(folderId);
   const folders = useFolders(folderId);
+  const breadcrumbs = useBreadcrumbs(folderId);
 
   return (
     <div className="app-shell">
@@ -30,6 +32,7 @@ export function DashboardPage() {
         </header>
 
         <section className="dashboard-content">
+          <Breadcrumbs items={breadcrumbs.data?.breadcrumbs ?? []} />
           <div className="file-toolbar">
             <div>
               <h2>Your files</h2>

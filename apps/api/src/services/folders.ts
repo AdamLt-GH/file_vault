@@ -104,3 +104,27 @@ export async function createFolder(input: CreateFolderInput) {
     throw error;
   }
 }
+
+export async function getFolderBreadcrumbs(folderId: string, ownerId: string) {
+  const breadcrumbs: Array<{ id: string; name: string }> = [];
+  const visited = new Set<string>();
+  let currentFolderId: string | null = folderId;
+
+  while (currentFolderId) {
+    if (visited.has(currentFolderId) || visited.size >= 100) {
+      throw new Error("The folder tree contains a cycle");
+    }
+
+    visited.add(currentFolderId);
+    const folder = await findOwnedFolder(currentFolderId, ownerId);
+
+    if (!folder) {
+      throw new FolderError("Folder not found", "FOLDER_NOT_FOUND");
+    }
+
+    breadcrumbs.unshift({ id: folder.id, name: folder.name });
+    currentFolderId = folder.parentFolderId;
+  }
+
+  return breadcrumbs;
+}

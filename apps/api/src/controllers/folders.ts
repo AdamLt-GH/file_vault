@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
   createFolder,
   FolderError,
+  getFolderBreadcrumbs,
   listFolders,
 } from "../services/folders.js";
 
@@ -72,3 +73,30 @@ export const postFolder: RequestHandler = async (request, response) => {
   }
 };
 
+export const getBreadcrumbs: RequestHandler = async (request, response) => {
+  const folderId = z.uuid().safeParse(request.params.id);
+
+  if (!folderId.success) {
+    response.status(400).json({
+      error: { code: "INVALID_FOLDER_ID", message: "Folder ID is not valid" },
+    });
+    return;
+  }
+
+  try {
+    const breadcrumbs = await getFolderBreadcrumbs(
+      folderId.data,
+      request.session.userId!,
+    );
+    response.status(200).json({ breadcrumbs });
+  } catch (error) {
+    if (error instanceof FolderError) {
+      response.status(404).json({
+        error: { code: error.code, message: error.message },
+      });
+      return;
+    }
+
+    throw error;
+  }
+};
