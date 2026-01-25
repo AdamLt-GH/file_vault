@@ -26,6 +26,14 @@ export const router = createBrowserRouter([
     ),
   },
   {
+    path: "/dashboard/folders/:folderId",
+    element: (
+      <ProtectedRoute>
+        <DashboardPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "*",
     element: <Navigate to="/" replace />,
   },

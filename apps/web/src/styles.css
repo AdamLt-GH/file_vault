@@ -405,6 +405,50 @@ h1 {
   overflow-x: auto;
 }
 
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.folder-card {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid #e1e7ef;
+  border-radius: 11px;
+  color: #27364f;
+  background: #fbfcfe;
+  text-decoration: none;
+}
+
+.folder-card:hover {
+  border-color: #b9cae6;
+  background: #f5f8ff;
+}
+
+.folder-card strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folder-icon {
+  display: grid;
+  width: 42px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 7px;
+  color: #875b10;
+  background: #fff2c7;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
 .file-table {
   width: 100%;
   border-collapse: collapse;

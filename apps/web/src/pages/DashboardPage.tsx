@@ -4,10 +4,15 @@ import { useSession } from "../features/auth/useSession";
 import { FileList } from "../features/files/FileList";
 import { UploadForm } from "../features/files/UploadForm";
 import { useFiles } from "../features/files/useFiles";
+import { FolderList } from "../features/folders/FolderList";
+import { useFolders } from "../features/folders/useFolders";
+import { useParams } from "react-router-dom";
 
 export function DashboardPage() {
   const session = useSession();
-  const files = useFiles();
+  const { folderId } = useParams();
+  const files = useFiles(folderId);
+  const folders = useFolders(folderId);
 
   return (
     <div className="app-shell">
@@ -28,17 +33,20 @@ export function DashboardPage() {
           <div className="file-toolbar">
             <div>
               <h2>Your files</h2>
-              <p>Files stored at the top level of your vault.</p>
+              <p>{folderId ? "Files in this folder." : "Files at the top level of your vault."}</p>
             </div>
             <UploadForm />
           </div>
 
-          {files.isPending ? (
+          {files.isPending || folders.isPending ? (
             <div className="file-state">Loading files...</div>
-          ) : files.isError ? (
+          ) : files.isError || folders.isError ? (
             <div className="file-state error">Files could not be loaded.</div>
           ) : (
-            <FileList files={files.data.files} />
+            <>
+              <FolderList folders={folders.data.folders} />
+              <FileList files={files.data.files} />
+            </>
           )}
         </section>
       </main>
