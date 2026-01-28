@@ -7,6 +7,7 @@ export class FolderError extends Error {
     message: string,
     readonly code:
       | "DUPLICATE_FOLDER"
+      | "FOLDER_NOT_EMPTY"
       | "FOLDER_NOT_FOUND"
       | "INVALID_FOLDER_NAME",
   ) {
@@ -127,4 +128,38 @@ export async function getFolderBreadcrumbs(folderId: string, ownerId: string) {
   }
 
   return breadcrumbs;
+}
+
+export async function renameFolder(
+  folderId: string,
+  ownerId: string,
+  requestedName: string,
+) {
+  const folder = await findOwnedFolder(folderId, ownerId);
+  if (!folder) {
+    throw new FolderError("Folder not found", "FOLDER_NOT_FOUND");
+  }
+
+  const name = validateFolderName(requestedName);
+  const duplicate = await prisma.folder.findFirst({
+    where: {
+      id: { not: folderId },
+      name,
+      ownerId,
+      parentFolderId: folder.parentFolderId,
+    },
+    select: { id: true },
+  });
+
+  if (duplicate) {
+    throw new FolderError(
+      "A folder with this name already exists here",
+      "DUPLICATE_FOLDER",
+    );
+  }
+
+  return prisma.folder.update({
+    where: { id: folderId },
+    data: { name },
+  });
 }
