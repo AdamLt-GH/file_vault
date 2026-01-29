@@ -3,9 +3,11 @@ import { z } from "zod";
 
 import {
   createFolder,
+  deleteFolder,
   FolderError,
   getFolderBreadcrumbs,
   listFolders,
+  renameFolder,
 } from "../services/folders.js";
 
 const listFoldersQuery = z.object({
@@ -97,6 +99,61 @@ export const getBreadcrumbs: RequestHandler = async (request, response) => {
       return;
     }
 
+    throw error;
+  }
+};
+
+const renameFolderBody = z.object({ name: z.string() });
+
+export const patchFolder: RequestHandler = async (request, response) => {
+  const folderId = z.uuid().safeParse(request.params.id);
+  const body = renameFolderBody.safeParse(request.body);
+
+  if (!folderId.success || !body.success) {
+    response.status(400).json({
+      error: { code: "INVALID_REQUEST", message: "Folder details are not valid" },
+    });
+    return;
+  }
+
+  try {
+    const folder = await renameFolder(
+      folderId.data,
+      request.session.userId!,
+      body.data.name,
+    );
+    response.status(200).json({ folder });
+  } catch (error) {
+    if (error instanceof FolderError) {
+      response.status(error.code === "FOLDER_NOT_FOUND" ? 404 : 409).json({
+        error: { code: error.code, message: error.message },
+      });
+      return;
+    }
+    throw error;
+  }
+};
+
+export const removeFolder: RequestHandler = async (request, response) => {
+  const folderId = z.uuid().safeParse(request.params.id);
+
+  if (!folderId.success) {
+    response.status(400).json({
+      error: { code: "INVALID_FOLDER_ID", message: "Folder ID is not valid" },
+    });
+    return;
+  }
+
+  try {
+    await deleteFolder(folderId.data, request.session.userId!);
+    response.status(204).send();
+  } catch (error) {
+    if (error instanceof FolderError) {
+      response.status(error.code === "FOLDER_NOT_FOUND" ? 404 : 409).json({
+        error: { code: error.code, message: error.message },
+      });
+      return;
+    }
     throw error;
   }
 };
