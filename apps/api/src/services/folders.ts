@@ -163,3 +163,45 @@ export async function renameFolder(
     data: { name },
   });
 }
+
+export async function deleteFolder(
+  folderId: string,
+  ownerId: string,
+): Promise<void> {
+  const folder = await prisma.folder.findFirst({
+    where: {
+      id: folderId,
+      ownerId,
+    },
+    include: {
+      _count: {
+        select: {
+          children: true,
+          files: true,
+        },
+      },
+    },
+  });
+
+  if (!folder) {
+    throw new FolderError("Folder not found", "FOLDER_NOT_FOUND");
+  }
+
+  if (folder._count.children > 0 || folder._count.files > 0) {
+    throw new FolderError(
+      "Move or delete this folder's contents first",
+      "FOLDER_NOT_EMPTY",
+    );
+  }
+
+  const deleted = await prisma.folder.deleteMany({
+    where: {
+      id: folderId,
+      ownerId,
+    },
+  });
+
+  if (deleted.count === 0) {
+    throw new FolderError("Folder not found", "FOLDER_NOT_FOUND");
+  }
+}
