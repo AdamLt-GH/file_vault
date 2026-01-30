@@ -33,7 +33,7 @@ export async function storeUpload(
   upload: IncomingUpload,
   storage: StorageProvider,
 ): Promise<StoredUpload> {
-  const originalName = validateFilename(upload.info.filename);
+  const originalName = validateUploadFilename(upload.info.filename);
   const extension = getFileExtension(originalName);
 
   if (!extension || !isSupportedExtension(extension)) {
@@ -96,7 +96,7 @@ export async function storeUpload(
   };
 }
 
-function validateFilename(filename: string): string {
+export function validateUploadFilename(filename: string): string {
   const normalisedFilename = filename.trim();
 
   if (
