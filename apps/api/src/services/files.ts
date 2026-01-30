@@ -4,6 +4,7 @@ import {
   isAllowedMimeType,
   isSupportedExtension,
 } from "../config/file-types.js";
+import { findOwnedFolder } from "./folders.js";
 import type { StorageProvider } from "../storage/storage-provider.js";
 import { validateUploadFilename } from "../uploads/store-upload.js";
 
@@ -13,6 +14,7 @@ export class FileOperationError extends Error {
     readonly code:
       | "DUPLICATE_FILE"
       | "FILE_NOT_FOUND"
+      | "FOLDER_NOT_FOUND"
       | "INVALID_FILENAME"
       | "UNSUPPORTED_FILE_TYPE",
   ) {
@@ -106,5 +108,45 @@ export async function renameOwnedFile(
   return prisma.storedFile.update({
     where: { id: fileId },
     data: { extension, originalName },
+  });
+}
+
+export async function moveOwnedFile(
+  fileId: string,
+  ownerId: string,
+  folderId: string | null,
+) {
+  const file = await findOwnedFile(fileId, ownerId);
+  if (!file) {
+    throw new FileOperationError("File not found", "FILE_NOT_FOUND");
+  }
+
+  if (folderId) {
+    const folder = await findOwnedFolder(folderId, ownerId);
+    if (!folder) {
+      throw new FileOperationError("Folder not found", "FOLDER_NOT_FOUND");
+    }
+  }
+
+  const duplicate = await prisma.storedFile.findFirst({
+    where: {
+      folderId,
+      id: { not: fileId },
+      originalName: file.originalName,
+      ownerId,
+    },
+    select: { id: true },
+  });
+
+  if (duplicate) {
+    throw new FileOperationError(
+      "A file with this name already exists in that folder",
+      "DUPLICATE_FILE",
+    );
+  }
+
+  return prisma.storedFile.update({
+    where: { id: fileId },
+    data: { folderId },
   });
 }

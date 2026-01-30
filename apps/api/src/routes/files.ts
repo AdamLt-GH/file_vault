@@ -6,6 +6,7 @@ import {
   createDownloadFileController,
   createUploadFileController,
   listFiles,
+  updateFile,
 } from "../controllers/files.js";
 import { requireAuthentication } from "../middleware/require-authentication.js";
 import type { StorageProvider } from "../storage/storage-provider.js";
@@ -23,6 +24,7 @@ export function createFilesRouter(
     createDownloadFileController(storage),
   );
   router.delete("/:id", requireAuthentication, createDeleteFileController(storage));
+  router.patch("/:id", requireAuthentication, updateFile);
 
   router.post(
     "/upload",

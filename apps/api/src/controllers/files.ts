@@ -6,7 +6,13 @@ import type { Environment } from "../config/environment.js";
 import { getMaxUploadSizeBytes } from "../config/upload-limits.js";
 import { prisma } from "../database/prisma.js";
 import { createDownloadHeaders } from "../downloads/headers.js";
-import { deleteOwnedFile, findOwnedFile } from "../services/files.js";
+import {
+  deleteOwnedFile,
+  FileOperationError,
+  findOwnedFile,
+  moveOwnedFile,
+  renameOwnedFile,
+} from "../services/files.js";
 import type { StorageProvider } from "../storage/storage-provider.js";
 import { parseSingleUpload, UploadError } from "../uploads/multipart.js";
 import {
@@ -107,6 +113,66 @@ export function createDeleteFileController(
     response.status(204).send();
   };
 }
+
+const updateFileBody = z
+  .object({
+    folderId: z.uuid().nullable().optional(),
+    name: z.string().optional(),
+  })
+  .refine((value) => value.folderId !== undefined || value.name !== undefined);
+
+export const updateFile: RequestHandler = async (request, response) => {
+  const fileId = z.uuid().safeParse(request.params.id);
+  const body = updateFileBody.safeParse(request.body);
+
+  if (!fileId.success || !body.success) {
+    response.status(400).json({
+      error: { code: "INVALID_REQUEST", message: "File changes are not valid" },
+    });
+    return;
+  }
+
+  try {
+    let file = body.data.name
+      ? await renameOwnedFile(
+          fileId.data,
+          request.session.userId!,
+          body.data.name,
+        )
+      : await findOwnedFile(fileId.data, request.session.userId!);
+
+    if (body.data.folderId !== undefined) {
+      file = await moveOwnedFile(
+        fileId.data,
+        request.session.userId!,
+        body.data.folderId,
+      );
+    }
+
+    if (!file) {
+      throw new FileOperationError("File not found", "FILE_NOT_FOUND");
+    }
+
+    response.status(200).json({
+      file: { ...file, sizeBytes: Number(file.sizeBytes) },
+    });
+  } catch (error) {
+    if (error instanceof FileOperationError) {
+      const status =
+        error.code === "FILE_NOT_FOUND" || error.code === "FOLDER_NOT_FOUND"
+          ? 404
+          : error.code === "DUPLICATE_FILE"
+            ? 409
+            : 400;
+      response.status(status).json({
+        error: { code: error.code, message: error.message },
+      });
+      return;
+    }
+
+    throw error;
+  }
+};
 
 export function createUploadFileController({
   environment,
