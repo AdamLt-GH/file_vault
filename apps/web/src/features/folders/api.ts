@@ -43,3 +43,22 @@ export function createFolder(input: {
     method: "POST",
   });
 }
+
+export function renameFolder(
+  folderId: string,
+  name: string,
+): Promise<{ folder: Folder }> {
+  return apiRequest<{ folder: Folder }>(
+    `/folders/${encodeURIComponent(folderId)}`,
+    {
+      body: JSON.stringify({ name }),
+      method: "PATCH",
+    },
+  );
+}
+
+export function deleteFolder(folderId: string): Promise<void> {
+  return apiRequest<void>(`/folders/${encodeURIComponent(folderId)}`, {
+    method: "DELETE",
+  });
+}

@@ -38,3 +38,19 @@ export function uploadFile(file: File): Promise<FileResponse> {
 export function getDownloadUrl(fileId: string): string {
   return `/api/v1/files/${encodeURIComponent(fileId)}/download`;
 }
+
+export function updateFile(
+  fileId: string,
+  changes: { folderId?: string | null; name?: string },
+): Promise<FileResponse> {
+  return apiRequest<FileResponse>(`/files/${encodeURIComponent(fileId)}`, {
+    body: JSON.stringify(changes),
+    method: "PATCH",
+  });
+}
+
+export function deleteFile(fileId: string): Promise<void> {
+  return apiRequest<void>(`/files/${encodeURIComponent(fileId)}`, {
+    method: "DELETE",
+  });
+}
