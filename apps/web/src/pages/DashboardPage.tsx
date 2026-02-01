@@ -52,7 +52,7 @@ export function DashboardPage() {
           ) : (
             <>
               <FolderList folders={folders.data.folders} />
-              <FileList files={files.data.files} />
+              <FileList files={files.data.files} folderId={folderId} />
             </>
           )}
         </section>

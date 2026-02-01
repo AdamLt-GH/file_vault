@@ -1,10 +1,12 @@
 import { getDownloadUrl, type StoredFile } from "./api";
+import { FileActions } from "./FileActions";
 
 interface FileListProps {
   files: StoredFile[];
+  folderId?: string | undefined;
 }
 
-export function FileList({ files }: FileListProps) {
+export function FileList({ files, folderId }: FileListProps) {
   if (files.length === 0) {
     return (
       <div className="empty-files">
@@ -41,9 +43,12 @@ export function FileList({ files }: FileListProps) {
               <td>{formatBytes(file.sizeBytes)}</td>
               <td>{formatDate(file.createdAt)}</td>
               <td>
-                <a className="table-action" href={getDownloadUrl(file.id)}>
-                  Download
-                </a>
+                <div className="row-actions-wrap">
+                  <a className="table-action" href={getDownloadUrl(file.id)}>
+                    Download
+                  </a>
+                  <FileActions file={file} folderId={folderId} />
+                </div>
               </td>
             </tr>
           ))}
