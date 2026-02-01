@@ -51,7 +51,10 @@ export function DashboardPage() {
             <div className="file-state error">Files could not be loaded.</div>
           ) : (
             <>
-              <FolderList folders={folders.data.folders} />
+              <FolderList
+                folders={folders.data.folders}
+                parentFolderId={folderId}
+              />
               <FileList files={files.data.files} folderId={folderId} />
             </>
           )}
