@@ -6,6 +6,7 @@ import {
   deleteFolder,
   FolderError,
   getFolderBreadcrumbs,
+  listFolderTree,
   listFolders,
   renameFolder,
 } from "../services/folders.js";
@@ -34,6 +35,11 @@ export const getFolders: RequestHandler = async (request, response) => {
     query.data.parentFolderId ?? null,
   );
 
+  response.status(200).json({ folders });
+};
+
+export const getFolderTree: RequestHandler = async (request, response) => {
+  const folders = await listFolderTree(request.session.userId!);
   response.status(200).json({ folders });
 };
 

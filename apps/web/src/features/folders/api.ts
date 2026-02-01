@@ -12,6 +12,12 @@ interface FolderListResponse {
   folders: Folder[];
 }
 
+export interface FolderTreeItem {
+  id: string;
+  name: string;
+  parentFolderId: string | null;
+}
+
 export interface Breadcrumb {
   id: string;
   name: string;
@@ -26,6 +32,10 @@ export function listFolders(parentFolderId?: string): Promise<FolderListResponse
     ? `?parentFolderId=${encodeURIComponent(parentFolderId)}`
     : "";
   return apiRequest<FolderListResponse>(`/folders${query}`);
+}
+
+export function listFolderTree(): Promise<{ folders: FolderTreeItem[] }> {
+  return apiRequest<{ folders: FolderTreeItem[] }>("/folders/tree");
 }
 
 export function getBreadcrumbs(folderId: string): Promise<BreadcrumbResponse> {

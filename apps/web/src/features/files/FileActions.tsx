@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { deleteFile, updateFile, type StoredFile } from "./api";
+import { MoveFileControl } from "./MoveFileControl";
 import { getFilesQueryKey } from "./useFiles";
 
 interface FileActionsProps {
@@ -34,6 +35,7 @@ export function FileActions({ file, folderId }: FileActionsProps) {
 
   return (
     <div className="row-actions">
+      <MoveFileControl currentFolderId={folderId} file={file} />
       <button type="button" onClick={rename} disabled={renameMutation.isPending}>
         Rename
       </button>
@@ -46,4 +48,3 @@ export function FileActions({ file, folderId }: FileActionsProps) {
     </div>
   );
 }
-

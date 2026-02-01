@@ -53,6 +53,18 @@ export async function listFolders(ownerId: string, parentFolderId: string | null
   });
 }
 
+export async function listFolderTree(ownerId: string) {
+  return prisma.folder.findMany({
+    where: { ownerId },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      parentFolderId: true,
+    },
+  });
+}
+
 interface CreateFolderInput {
   name: string;
   ownerId: string;
