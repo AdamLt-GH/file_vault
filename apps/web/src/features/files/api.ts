@@ -25,14 +25,22 @@ export function listFiles(folderId?: string): Promise<FileListResponse> {
   return apiRequest<FileListResponse>(`/files${query}`);
 }
 
-export function uploadFile(file: File): Promise<FileResponse> {
+export function uploadFile(file: File, folderId?: string): Promise<FileResponse> {
   const body = new FormData();
   body.append("file", file);
+  const query = folderId ? `?folderId=${encodeURIComponent(folderId)}` : "";
 
-  return apiRequest<FileResponse>("/files/upload", {
+  return apiRequest<FileResponse>(`/files/upload${query}`, {
     body,
     method: "POST",
   });
+}
+
+export function uploadFiles(
+  files: File[],
+  folderId?: string,
+): Promise<FileResponse[]> {
+  return Promise.all(files.map((file) => uploadFile(file, folderId)));
 }
 
 export function getDownloadUrl(fileId: string): string {

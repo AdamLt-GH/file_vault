@@ -2,26 +2,32 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type FormEvent } from "react";
 
 import { ApiError } from "../../api/http";
-import { uploadFile } from "./api";
+import { uploadFiles } from "./api";
 import { getFilesQueryKey } from "./useFiles";
 
-export function UploadForm() {
+interface UploadFormProps {
+  folderId?: string | undefined;
+}
+
+export function UploadForm({ folderId }: UploadFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const uploadMutation = useMutation({
-    mutationFn: uploadFile,
+    mutationFn: (files: File[]) => uploadFiles(files, folderId),
     onSuccess: async () => {
-      setSelectedFile(null);
+      setSelectedFiles([]);
       if (inputRef.current) inputRef.current.value = "";
-      await queryClient.invalidateQueries({ queryKey: getFilesQueryKey() });
+      await queryClient.invalidateQueries({
+        queryKey: getFilesQueryKey(folderId),
+      });
     },
   });
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
-    if (selectedFile) uploadMutation.mutate(selectedFile);
+    if (selectedFiles.length > 0) uploadMutation.mutate(selectedFiles);
   }
 
   const errorMessage =
@@ -34,16 +40,25 @@ export function UploadForm() {
   return (
     <form className="upload-form" onSubmit={handleSubmit}>
       <label className="file-picker">
-        <span>{selectedFile ? selectedFile.name : "Choose a file"}</span>
+        <span>
+          {selectedFiles.length === 0
+            ? "Choose files"
+            : selectedFiles.length === 1
+              ? selectedFiles[0]?.name
+              : `${selectedFiles.length} files selected`}
+        </span>
         <input
           ref={inputRef}
           type="file"
-          onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+          multiple
+          onChange={(event) =>
+            setSelectedFiles(Array.from(event.target.files ?? []))
+          }
         />
       </label>
       <button
         type="submit"
-        disabled={!selectedFile || uploadMutation.isPending}
+        disabled={selectedFiles.length === 0 || uploadMutation.isPending}
       >
         {uploadMutation.isPending ? "Uploading..." : "Upload"}
       </button>

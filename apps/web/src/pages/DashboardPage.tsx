@@ -41,7 +41,7 @@ export function DashboardPage() {
             </div>
             <div className="toolbar-actions">
               <CreateFolderForm parentFolderId={folderId} />
-              <UploadForm />
+              <UploadForm folderId={folderId} />
             </div>
           </div>
 

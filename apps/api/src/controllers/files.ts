@@ -6,6 +6,7 @@ import type { Environment } from "../config/environment.js";
 import { getMaxUploadSizeBytes } from "../config/upload-limits.js";
 import { prisma } from "../database/prisma.js";
 import { createDownloadHeaders } from "../downloads/headers.js";
+import { findOwnedFolder } from "../services/folders.js";
 import {
   deleteOwnedFile,
   FileOperationError,
@@ -27,6 +28,10 @@ interface FileControllerDependencies {
 }
 
 const listFilesQuery = z.object({
+  folderId: z.uuid().optional(),
+});
+
+const uploadFileQuery = z.object({
   folderId: z.uuid().optional(),
 });
 
@@ -180,6 +185,27 @@ export function createUploadFileController({
 }: FileControllerDependencies): RequestHandler {
   return async (request, response) => {
     let stagedUpload: StoredUpload | undefined;
+    const query = uploadFileQuery.safeParse(request.query);
+
+    if (!query.success) {
+      response.status(400).json({
+        error: { code: "INVALID_QUERY", message: "Folder ID is not valid" },
+      });
+      return;
+    }
+
+    if (query.data.folderId) {
+      const folder = await findOwnedFolder(
+        query.data.folderId,
+        request.session.userId!,
+      );
+      if (!folder) {
+        response.status(404).json({
+          error: { code: "FOLDER_NOT_FOUND", message: "Folder not found" },
+        });
+        return;
+      }
+    }
 
     try {
       stagedUpload = await parseSingleUpload(
@@ -195,6 +221,7 @@ export function createUploadFileController({
         data: {
           checksum: stagedUpload.checksum,
           extension: stagedUpload.extension,
+          folderId: query.data.folderId ?? null,
           mimeType: stagedUpload.mimeType,
           originalName: stagedUpload.originalName,
           ownerId: request.session.userId!,
