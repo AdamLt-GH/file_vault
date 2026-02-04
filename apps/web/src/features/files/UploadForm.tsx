@@ -1,5 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState, type FormEvent } from "react";
+import {
+  useRef,
+  useState,
+  type DragEvent,
+  type FormEvent,
+} from "react";
 
 import { ApiError } from "../../api/http";
 import { uploadFiles } from "./api";
@@ -13,6 +18,7 @@ export function UploadForm({ folderId }: UploadFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   const uploadMutation = useMutation({
     mutationFn: (files: File[]) => uploadFiles(files, folderId),
@@ -30,6 +36,19 @@ export function UploadForm({ folderId }: UploadFormProps) {
     if (selectedFiles.length > 0) uploadMutation.mutate(selectedFiles);
   }
 
+  function handleDrag(event: DragEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(event.type === "dragenter" || event.type === "dragover");
+  }
+
+  function handleDrop(event: DragEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+    setSelectedFiles(Array.from(event.dataTransfer.files));
+  }
+
   const errorMessage =
     uploadMutation.error instanceof ApiError
       ? uploadMutation.error.message
@@ -38,11 +57,18 @@ export function UploadForm({ folderId }: UploadFormProps) {
         : null;
 
   return (
-    <form className="upload-form" onSubmit={handleSubmit}>
+    <form
+      className={`upload-form drop-zone${isDragging ? " dragging" : ""}`}
+      onSubmit={handleSubmit}
+      onDragEnter={handleDrag}
+      onDragLeave={handleDrag}
+      onDragOver={handleDrag}
+      onDrop={handleDrop}
+    >
       <label className="file-picker">
         <span>
           {selectedFiles.length === 0
-            ? "Choose files"
+            ? "Choose files or drop them here"
             : selectedFiles.length === 1
               ? selectedFiles[0]?.name
               : `${selectedFiles.length} files selected`}

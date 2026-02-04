@@ -378,6 +378,18 @@ h1 {
   flex-wrap: wrap;
 }
 
+.drop-zone {
+  padding: 6px;
+  border: 1px dashed transparent;
+  border-radius: 12px;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.drop-zone.dragging {
+  border-color: #4f7fe3;
+  background: #eff5ff;
+}
+
 .toolbar-actions {
   display: flex;
   align-items: flex-start;
