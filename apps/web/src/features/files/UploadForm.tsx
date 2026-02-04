@@ -7,7 +7,7 @@ import {
 } from "react";
 
 import { ApiError } from "../../api/http";
-import { uploadFiles } from "./api";
+import { uploadFilesWithProgress } from "./api";
 import { getFilesQueryKey } from "./useFiles";
 
 interface UploadFormProps {
@@ -19,9 +19,12 @@ export function UploadForm({ folderId }: UploadFormProps) {
   const queryClient = useQueryClient();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const uploadMutation = useMutation({
-    mutationFn: (files: File[]) => uploadFiles(files, folderId),
+    mutationFn: (files: File[]) =>
+      uploadFilesWithProgress(files, folderId, setProgress),
+    onMutate: () => setProgress(0),
     onSuccess: async () => {
       setSelectedFiles([]);
       if (inputRef.current) inputRef.current.value = "";
@@ -92,6 +95,12 @@ export function UploadForm({ folderId }: UploadFormProps) {
         <span className="upload-error" role="alert">
           {errorMessage}
         </span>
+      ) : null}
+      {uploadMutation.isPending ? (
+        <div className="upload-progress" aria-label={`Upload ${progress}%`}>
+          <span style={{ width: `${progress}%` }} />
+          <strong>{progress}%</strong>
+        </div>
       ) : null}
     </form>
   );

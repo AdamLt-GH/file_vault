@@ -490,6 +490,33 @@ h1 {
   text-align: right;
 }
 
+.upload-progress {
+  position: relative;
+  width: min(100%, 280px);
+  height: 8px;
+  flex-basis: 100%;
+  margin-left: auto;
+  overflow: visible;
+  border-radius: 999px;
+  background: #dce5f2;
+}
+
+.upload-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #2563eb;
+  transition: width 100ms linear;
+}
+
+.upload-progress strong {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  color: #65758c;
+  font-size: 0.72rem;
+}
+
 .file-table-wrap {
   margin-top: 20px;
   overflow-x: auto;

@@ -1,4 +1,4 @@
-import { apiRequest } from "../../api/http";
+import { ApiError, apiRequest } from "../../api/http";
 
 export interface StoredFile {
   checksum: string;
@@ -16,7 +16,7 @@ interface FileListResponse {
   files: StoredFile[];
 }
 
-interface FileResponse {
+export interface FileResponse {
   file: StoredFile;
 }
 
@@ -41,6 +41,74 @@ export function uploadFiles(
   folderId?: string,
 ): Promise<FileResponse[]> {
   return Promise.all(files.map((file) => uploadFile(file, folderId)));
+}
+
+export function uploadFileWithProgress(
+  file: File,
+  folderId: string | undefined,
+  onProgress: (percentage: number) => void,
+): Promise<FileResponse> {
+  return new Promise((resolve, reject) => {
+    const body = new FormData();
+    body.append("file", file);
+    const query = folderId ? `?folderId=${encodeURIComponent(folderId)}` : "";
+    const request = new XMLHttpRequest();
+
+    request.open("POST", `/api/v1/files/upload${query}`);
+    request.withCredentials = true;
+    request.upload.addEventListener("progress", (event) => {
+      if (event.lengthComputable) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    });
+    request.addEventListener("load", () => {
+      let response: FileResponse & {
+        error?: { code?: string; message?: string };
+      };
+
+      try {
+        response = JSON.parse(request.responseText) as typeof response;
+      } catch {
+        reject(new ApiError(request.status, "INVALID_RESPONSE", "Invalid server response"));
+        return;
+      }
+
+      if (request.status >= 200 && request.status < 300) {
+        resolve(response);
+      } else {
+        reject(
+          new ApiError(
+            request.status,
+            response.error?.code ?? "UPLOAD_FAILED",
+            response.error?.message ?? "The file could not be uploaded",
+          ),
+        );
+      }
+    });
+    request.addEventListener("error", () => {
+      reject(new ApiError(0, "NETWORK_ERROR", "File Vault could not be reached"));
+    });
+    request.send(body);
+  });
+}
+
+export async function uploadFilesWithProgress(
+  files: File[],
+  folderId: string | undefined,
+  onProgress: (percentage: number) => void,
+): Promise<FileResponse[]> {
+  const responses: FileResponse[] = [];
+
+  for (const [index, file] of files.entries()) {
+    const response = await uploadFileWithProgress(file, folderId, (percentage) => {
+      const completed = index + percentage / 100;
+      onProgress(Math.round((completed / files.length) * 100));
+    });
+    responses.push(response);
+  }
+
+  onProgress(100);
+  return responses;
 }
 
 export function getDownloadUrl(fileId: string): string {
