@@ -12,8 +12,15 @@ export interface StoredFile {
   updatedAt: string;
 }
 
-interface FileListResponse {
+export interface FileListResponse {
   files: StoredFile[];
+}
+
+export interface FileSearchResponse extends FileListResponse {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
 }
 
 export interface FileResponse {
@@ -23,6 +30,20 @@ export interface FileResponse {
 export function listFiles(folderId?: string): Promise<FileListResponse> {
   const query = folderId ? `?folderId=${encodeURIComponent(folderId)}` : "";
   return apiRequest<FileListResponse>(`/files${query}`);
+}
+
+export function searchFiles(
+  query: string,
+  page: number,
+  pageSize = 20,
+): Promise<FileSearchResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+    q: query,
+  });
+
+  return apiRequest<FileSearchResponse>(`/search?${params.toString()}`);
 }
 
 export function uploadFile(file: File, folderId?: string): Promise<FileResponse> {

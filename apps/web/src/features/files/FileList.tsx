@@ -2,16 +2,23 @@ import { getDownloadUrl, type StoredFile } from "./api";
 import { FileActions } from "./FileActions";
 
 interface FileListProps {
+  emptyMessage?: string;
   files: StoredFile[];
   folderId?: string | undefined;
+  showActions?: boolean;
 }
 
-export function FileList({ files, folderId }: FileListProps) {
+export function FileList({
+  emptyMessage = "Upload a file to get started.",
+  files,
+  folderId,
+  showActions = true,
+}: FileListProps) {
   if (files.length === 0) {
     return (
       <div className="empty-files">
         <strong>This folder is empty</strong>
-        <span>Upload a file to get started.</span>
+        <span>{emptyMessage}</span>
       </div>
     );
   }
@@ -47,7 +54,9 @@ export function FileList({ files, folderId }: FileListProps) {
                   <a className="table-action" href={getDownloadUrl(file.id)}>
                     Download
                   </a>
-                  <FileActions file={file} folderId={folderId} />
+                  {showActions ? (
+                    <FileActions file={file} folderId={folderId} />
+                  ) : null}
                 </div>
               </td>
             </tr>

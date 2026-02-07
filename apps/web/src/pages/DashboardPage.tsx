@@ -8,6 +8,7 @@ import { FolderList } from "../features/folders/FolderList";
 import { Breadcrumbs } from "../features/folders/Breadcrumbs";
 import { CreateFolderForm } from "../features/folders/CreateFolderForm";
 import { useBreadcrumbs, useFolders } from "../features/folders/useFolders";
+import { SearchPanel } from "../features/search/SearchPanel";
 import { useParams } from "react-router-dom";
 
 export function DashboardPage() {
@@ -33,6 +34,7 @@ export function DashboardPage() {
         </header>
 
         <section className="dashboard-content">
+          <SearchPanel />
           <Breadcrumbs items={breadcrumbs.data?.breadcrumbs ?? []} />
           <div className="file-toolbar">
             <div>
