@@ -10,6 +10,7 @@ import { authRouter } from "./routes/auth.js";
 import { createFilesRouter } from "./routes/files.js";
 import { foldersRouter } from "./routes/folders.js";
 import { healthRouter } from "./routes/health.js";
+import { searchRouter } from "./routes/search.js";
 import { createStorageProvider } from "./storage/index.js";
 
 export function createApp(environment: Environment): Express {
@@ -37,6 +38,7 @@ export function createApp(environment: Environment): Express {
   app.use("/api/v1/auth", authRouter);
   app.use("/api/v1/files", createFilesRouter(environment, storage));
   app.use("/api/v1/folders", foldersRouter);
+  app.use("/api/v1/search", searchRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
