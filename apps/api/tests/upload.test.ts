@@ -11,6 +11,7 @@ import { LocalFilesystemStorage } from "../src/storage/local-filesystem.js";
 
 const mocks = vi.hoisted(() => ({
   authenticate: vi.fn(),
+  countFiles: vi.fn(),
   createFile: vi.fn(),
   deleteMany: vi.fn(),
   findFiles: vi.fn(),
@@ -26,6 +27,7 @@ vi.mock("../src/database/prisma.js", () => ({
   prisma: {
     adminUser: { findUnique: vi.fn() },
     storedFile: {
+      count: mocks.countFiles,
       create: mocks.createFile,
       findFirst: mocks.findOwnedFile,
       findMany: mocks.findFiles,
@@ -57,9 +59,12 @@ describe("file uploads", () => {
       id: "1d72a054-5926-494d-84fc-927bd01546a0",
       email: "admin@example.com",
     });
-    mocks.transaction.mockImplementation(async (work) =>
-      work({ storedFile: { deleteMany: mocks.deleteMany } }),
-    );
+    mocks.countFiles.mockResolvedValue(1);
+    mocks.transaction.mockImplementation(async (work) => {
+      if (Array.isArray(work)) return Promise.all(work);
+
+      return work({ storedFile: { deleteMany: mocks.deleteMany } });
+    });
   });
 
   afterEach(async () => {
@@ -169,6 +174,12 @@ describe("file uploads", () => {
     expect(response.body.files[0]).toMatchObject({
       originalName: "notes.txt",
       sizeBytes: 13,
+    });
+    expect(response.body).toMatchObject({
+      page: 1,
+      pageSize: 20,
+      total: 1,
+      totalPages: 1,
     });
   });
 

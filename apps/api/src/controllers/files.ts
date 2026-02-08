@@ -55,26 +55,34 @@ export const listFiles: RequestHandler = async (request, response) => {
     size: "sizeBytes",
   } as const;
 
-  const files = await prisma.storedFile.findMany({
-    where: {
-      folderId: query.data.folderId ?? null,
-      ownerId: request.session.userId!,
-    },
-    orderBy: [
-      {
-        [sortFields[query.data.sortBy]]: query.data.sortDirection,
-      },
-      { id: "asc" },
-    ],
-    skip: (query.data.page - 1) * query.data.pageSize,
-    take: query.data.pageSize,
-  });
+  const where = {
+    folderId: query.data.folderId ?? null,
+    ownerId: request.session.userId!,
+  };
+  const [files, total] = await prisma.$transaction([
+    prisma.storedFile.findMany({
+      where,
+      orderBy: [
+        {
+          [sortFields[query.data.sortBy]]: query.data.sortDirection,
+        },
+        { id: "asc" },
+      ],
+      skip: (query.data.page - 1) * query.data.pageSize,
+      take: query.data.pageSize,
+    }),
+    prisma.storedFile.count({ where }),
+  ]);
 
   response.status(200).json({
     files: files.map((file) => ({
       ...file,
       sizeBytes: Number(file.sizeBytes),
     })),
+    page: query.data.page,
+    pageSize: query.data.pageSize,
+    total,
+    totalPages: Math.max(1, Math.ceil(total / query.data.pageSize)),
   });
 };
 
