@@ -29,6 +29,10 @@ interface FileControllerDependencies {
 
 const listFilesQuery = z.object({
   folderId: z.uuid().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  sortBy: z.enum(["createdAt", "name", "size"]).default("createdAt"),
+  sortDirection: z.enum(["asc", "desc"]).default("desc"),
 });
 
 const uploadFileQuery = z.object({
@@ -40,17 +44,30 @@ export const listFiles: RequestHandler = async (request, response) => {
 
   if (!query.success) {
     response.status(400).json({
-      error: { code: "INVALID_QUERY", message: "Folder ID is not valid" },
+      error: { code: "INVALID_QUERY", message: "File list options are not valid" },
     });
     return;
   }
+
+  const sortFields = {
+    createdAt: "createdAt",
+    name: "originalName",
+    size: "sizeBytes",
+  } as const;
 
   const files = await prisma.storedFile.findMany({
     where: {
       folderId: query.data.folderId ?? null,
       ownerId: request.session.userId!,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [
+      {
+        [sortFields[query.data.sortBy]]: query.data.sortDirection,
+      },
+      { id: "asc" },
+    ],
+    skip: (query.data.page - 1) * query.data.pageSize,
+    take: query.data.pageSize,
   });
 
   response.status(200).json({
