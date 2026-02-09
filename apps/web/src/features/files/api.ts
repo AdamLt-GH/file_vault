@@ -14,6 +14,10 @@ export interface StoredFile {
 
 export interface FileListResponse {
   files: StoredFile[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
 }
 
 export interface FileSearchResponse extends FileListResponse {
@@ -27,9 +31,29 @@ export interface FileResponse {
   file: StoredFile;
 }
 
-export function listFiles(folderId?: string): Promise<FileListResponse> {
-  const query = folderId ? `?folderId=${encodeURIComponent(folderId)}` : "";
-  return apiRequest<FileListResponse>(`/files${query}`);
+export type FileSort = "createdAt" | "name" | "size";
+export type SortDirection = "asc" | "desc";
+
+export interface FileListOptions {
+  page: number;
+  pageSize?: number;
+  sortBy: FileSort;
+  sortDirection: SortDirection;
+}
+
+export function listFiles(
+  folderId: string | undefined,
+  options: FileListOptions,
+): Promise<FileListResponse> {
+  const params = new URLSearchParams({
+    page: options.page.toString(),
+    pageSize: (options.pageSize ?? 20).toString(),
+    sortBy: options.sortBy,
+    sortDirection: options.sortDirection,
+  });
+  if (folderId) params.set("folderId", folderId);
+
+  return apiRequest<FileListResponse>(`/files?${params.toString()}`);
 }
 
 export function searchFiles(

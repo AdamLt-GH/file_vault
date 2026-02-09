@@ -608,6 +608,58 @@ h1 {
   overflow-x: auto;
 }
 
+.file-list-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid #e7ebf1;
+}
+
+.file-list-controls label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #667085;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.file-list-controls select {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid #ccd5e1;
+  border-radius: 8px;
+  color: #344054;
+  background: #ffffff;
+}
+
+.file-page-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #667085;
+  font-size: 0.82rem;
+}
+
+.file-page-controls button {
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid #ccd5e1;
+  border-radius: 8px;
+  color: #344054;
+  background: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.file-page-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .folder-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

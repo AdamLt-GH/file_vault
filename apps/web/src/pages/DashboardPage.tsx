@@ -1,7 +1,12 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+
 import { Sidebar } from "../components/Sidebar";
 import { LogoutButton } from "../features/auth/LogoutButton";
 import { useSession } from "../features/auth/useSession";
 import { FileList } from "../features/files/FileList";
+import { FileListControls } from "../features/files/FileListControls";
+import type { FileSort, SortDirection } from "../features/files/api";
 import { UploadForm } from "../features/files/UploadForm";
 import { useFiles } from "../features/files/useFiles";
 import { FolderList } from "../features/folders/FolderList";
@@ -9,14 +14,24 @@ import { Breadcrumbs } from "../features/folders/Breadcrumbs";
 import { CreateFolderForm } from "../features/folders/CreateFolderForm";
 import { useBreadcrumbs, useFolders } from "../features/folders/useFolders";
 import { SearchPanel } from "../features/search/SearchPanel";
-import { useParams } from "react-router-dom";
 
 export function DashboardPage() {
   const session = useSession();
   const { folderId } = useParams();
-  const files = useFiles(folderId);
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<FileSort>("createdAt");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const files = useFiles(folderId, { page, sortBy, sortDirection });
   const folders = useFolders(folderId);
   const breadcrumbs = useBreadcrumbs(folderId);
+
+  useEffect(() => setPage(1), [folderId]);
+
+  function changeSort(nextSort: FileSort, nextDirection: SortDirection) {
+    setPage(1);
+    setSortBy(nextSort);
+    setSortDirection(nextDirection);
+  }
 
   return (
     <div className="app-shell">
@@ -56,6 +71,15 @@ export function DashboardPage() {
               <FolderList
                 folders={folders.data.folders}
                 parentFolderId={folderId}
+              />
+              <FileListControls
+                onPageChange={setPage}
+                onSortChange={changeSort}
+                page={files.data.page}
+                sortBy={sortBy}
+                sortDirection={sortDirection}
+                total={files.data.total}
+                totalPages={files.data.totalPages}
               />
               <FileList files={files.data.files} folderId={folderId} />
             </>
