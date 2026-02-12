@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 
 import { ApiError } from "../../api/http";
+import { storageSummaryQueryKey } from "../storage/useStorageSummary";
 import { createFolder } from "./api";
 import { getFoldersQueryKey } from "./useFolders";
 
@@ -22,6 +23,7 @@ export function CreateFolderForm({ parentFolderId }: CreateFolderFormProps) {
       await queryClient.invalidateQueries({
         queryKey: getFoldersQueryKey(parentFolderId),
       });
+      await queryClient.invalidateQueries({ queryKey: storageSummaryQueryKey });
     },
   });
 

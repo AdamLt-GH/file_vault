@@ -14,6 +14,7 @@ import { Breadcrumbs } from "../features/folders/Breadcrumbs";
 import { CreateFolderForm } from "../features/folders/CreateFolderForm";
 import { useBreadcrumbs, useFolders } from "../features/folders/useFolders";
 import { SearchPanel } from "../features/search/SearchPanel";
+import { StorageSummaryCards } from "../features/storage/StorageSummaryCards";
 
 export function DashboardPage() {
   const session = useSession();
@@ -47,6 +48,8 @@ export function DashboardPage() {
             <LogoutButton />
           </div>
         </header>
+
+        <StorageSummaryCards />
 
         <section className="dashboard-content">
           <SearchPanel />

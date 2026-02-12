@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import { ApiError } from "../../api/http";
+import { storageSummaryQueryKey } from "../storage/useStorageSummary";
 import { uploadFilesWithProgress } from "./api";
 import { getFilesQueryKey } from "./useFiles";
 
@@ -31,6 +32,7 @@ export function UploadForm({ folderId }: UploadFormProps) {
       await queryClient.invalidateQueries({
         queryKey: getFilesQueryKey(folderId),
       });
+      await queryClient.invalidateQueries({ queryKey: storageSummaryQueryKey });
     },
   });
 

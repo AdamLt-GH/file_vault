@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { storageSummaryQueryKey } from "../storage/useStorageSummary";
 import { deleteFolder, renameFolder, type Folder } from "./api";
 import { getFoldersQueryKey } from "./useFolders";
 
@@ -17,6 +18,7 @@ export function FolderActions({ folder, parentFolderId }: FolderActionsProps) {
         queryKey: getFoldersQueryKey(parentFolderId),
       }),
       queryClient.invalidateQueries({ queryKey: ["folder-tree"] }),
+      queryClient.invalidateQueries({ queryKey: storageSummaryQueryKey }),
     ]);
   }
 
@@ -54,4 +56,3 @@ export function FolderActions({ folder, parentFolderId }: FolderActionsProps) {
     </div>
   );
 }
-

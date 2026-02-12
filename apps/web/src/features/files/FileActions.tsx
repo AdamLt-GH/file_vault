@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { storageSummaryQueryKey } from "../storage/useStorageSummary";
 import { deleteFile, updateFile, type StoredFile } from "./api";
 import { MoveFileControl } from "./MoveFileControl";
 import { getFilesQueryKey } from "./useFiles";
@@ -20,8 +21,12 @@ export function FileActions({ file, folderId }: FileActionsProps) {
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteFile(file.id),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: getFilesQueryKey(folderId) }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: getFilesQueryKey(folderId) }),
+        queryClient.invalidateQueries({ queryKey: storageSummaryQueryKey }),
+      ]);
+    },
   });
 
   function rename(): void {

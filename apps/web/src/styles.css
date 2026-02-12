@@ -322,6 +322,83 @@ h1 {
   box-shadow: 0 10px 30px rgb(42 56 78 / 6%);
 }
 
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.summary-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #e0e6ee;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgb(42 56 78 / 5%);
+}
+
+.summary-card span,
+.summary-card small {
+  display: block;
+}
+
+.summary-card span {
+  color: #667085;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.summary-card strong {
+  display: block;
+  margin: 8px 0 5px;
+  overflow: hidden;
+  color: #172033;
+  font-size: 1.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary-card .summary-date {
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+.summary-card small {
+  color: #98a2b3;
+  font-size: 0.75rem;
+}
+
+.summary-card-primary {
+  border-color: #2563eb;
+  background: #2563eb;
+}
+
+.summary-card-primary span,
+.summary-card-primary small {
+  color: #cfe0ff;
+}
+
+.summary-card-primary strong {
+  color: #ffffff;
+}
+
+.summary-state {
+  min-height: 110px;
+  margin-top: 28px;
+  padding: 24px;
+  border: 1px solid #e0e6ee;
+  border-radius: 14px;
+  color: #667085;
+  background: #ffffff;
+}
+
+.summary-state.error {
+  color: #b42318;
+}
+
 .dashboard-content h2 {
   margin: 0 0 8px;
   color: #172033;
