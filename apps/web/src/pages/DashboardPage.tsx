@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { Sidebar } from "../components/Sidebar";
+import { LoadingState } from "../components/LoadingState";
 import { LogoutButton } from "../features/auth/LogoutButton";
 import { useSession } from "../features/auth/useSession";
 import { FileList } from "../features/files/FileList";
@@ -66,7 +67,7 @@ export function DashboardPage() {
           </div>
 
           {files.isPending || folders.isPending ? (
-            <div className="file-state">Loading files...</div>
+            <LoadingState message="Loading files..." />
           ) : files.isError || folders.isError ? (
             <div className="file-state error">Files could not be loaded.</div>
           ) : (

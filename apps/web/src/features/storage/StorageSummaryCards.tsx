@@ -1,10 +1,11 @@
+import { LoadingState } from "../../components/LoadingState";
 import { useStorageSummary } from "./useStorageSummary";
 
 export function StorageSummaryCards() {
   const summary = useStorageSummary();
 
   if (summary.isPending) {
-    return <div className="summary-state">Loading storage totals...</div>;
+    return <LoadingState message="Loading storage totals..." small />;
   }
 
   if (summary.isError) {
