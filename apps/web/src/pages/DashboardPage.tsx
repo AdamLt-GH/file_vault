@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { Sidebar } from "../components/Sidebar";
+import { ErrorState } from "../components/ErrorState";
 import { LoadingState } from "../components/LoadingState";
 import { LogoutButton } from "../features/auth/LogoutButton";
 import { useSession } from "../features/auth/useSession";
@@ -69,7 +70,12 @@ export function DashboardPage() {
           {files.isPending || folders.isPending ? (
             <LoadingState message="Loading files..." />
           ) : files.isError || folders.isError ? (
-            <div className="file-state error">Files could not be loaded.</div>
+            <ErrorState
+              message="Files could not be loaded."
+              onRetry={() => {
+                void Promise.all([files.refetch(), folders.refetch()]);
+              }}
+            />
           ) : (
             <>
               <FolderList

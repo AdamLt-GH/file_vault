@@ -1,4 +1,5 @@
 import { LoadingState } from "../../components/LoadingState";
+import { ErrorState } from "../../components/ErrorState";
 import { useStorageSummary } from "./useStorageSummary";
 
 export function StorageSummaryCards() {
@@ -9,7 +10,13 @@ export function StorageSummaryCards() {
   }
 
   if (summary.isError) {
-    return <div className="summary-state error">Storage totals could not be loaded.</div>;
+    return (
+      <ErrorState
+        message="Storage totals could not be loaded."
+        onRetry={() => void summary.refetch()}
+        small
+      />
+    );
   }
 
   const details = summary.data.summary;

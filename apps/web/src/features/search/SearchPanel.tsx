@@ -1,6 +1,7 @@
 import { type FormEvent, useState } from "react";
 
 import { LoadingState } from "../../components/LoadingState";
+import { ErrorState } from "../../components/ErrorState";
 import { FileList } from "../files/FileList";
 import { useSearchFiles } from "./useSearchFiles";
 
@@ -60,7 +61,11 @@ export function SearchPanel() {
           {results.isPending ? (
             <LoadingState message="Searching files..." small />
           ) : results.isError ? (
-            <div className="file-state error">Search results could not be loaded.</div>
+            <ErrorState
+              message="Search results could not be loaded."
+              onRetry={() => void results.refetch()}
+              small
+            />
           ) : (
             <>
               <FileList

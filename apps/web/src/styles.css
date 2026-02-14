@@ -931,3 +931,42 @@ h1 {
     transform: rotate(360deg);
   }
 }
+
+.error-state {
+  display: grid;
+  min-height: 240px;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  color: #667085;
+  text-align: center;
+}
+
+.error-state strong {
+  color: #b42318;
+}
+
+.error-state button {
+  min-height: 38px;
+  margin-top: 6px;
+  padding: 0 13px;
+  border: 1px solid #f2b8b5;
+  border-radius: 8px;
+  color: #b42318;
+  background: #fff7f6;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.error-state-small {
+  min-height: 110px;
+  margin-top: 28px;
+  padding: 18px;
+  border: 1px solid #f1cecb;
+  border-radius: 14px;
+  background: #fffafa;
+}
+
+.search-results .error-state-small {
+  margin-top: 0;
+}
