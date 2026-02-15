@@ -38,7 +38,7 @@ export function FileList({
         <tbody>
           {files.map((file) => (
             <tr key={file.id}>
-              <td>
+              <td data-label="Name">
                 <div className="file-name">
                   <span className="file-icon" aria-hidden="true">
                     {file.extension.slice(0, 3).toUpperCase()}
@@ -46,10 +46,10 @@ export function FileList({
                   <span title={file.originalName}>{file.originalName}</span>
                 </div>
               </td>
-              <td>{file.mimeType}</td>
-              <td>{formatBytes(file.sizeBytes)}</td>
-              <td>{formatDate(file.createdAt)}</td>
-              <td>
+              <td data-label="Type">{file.mimeType}</td>
+              <td data-label="Size">{formatBytes(file.sizeBytes)}</td>
+              <td data-label="Uploaded">{formatDate(file.createdAt)}</td>
+              <td data-label="Actions">
                 <div className="row-actions-wrap">
                   <a className="table-action" href={getDownloadUrl(file.id)}>
                     Download
