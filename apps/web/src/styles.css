@@ -1041,3 +1041,59 @@ h1 {
     padding: 17px;
   }
 }
+
+@media (max-width: 760px) {
+  .dashboard-content {
+    padding: 20px;
+  }
+
+  .file-toolbar,
+  .file-list-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .toolbar-actions {
+    justify-content: flex-start;
+  }
+
+  .search-form > div {
+    flex-wrap: wrap;
+  }
+
+  .search-form input {
+    width: 100%;
+    flex-basis: 100%;
+  }
+
+  .file-page-controls {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .folder-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .toolbar-actions,
+  .create-folder-form,
+  .upload-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .file-picker,
+  .create-folder-form input,
+  .secondary-action,
+  .create-folder-form button,
+  .upload-form button {
+    width: 100%;
+    max-width: none;
+  }
+
+  .folder-grid {
+    grid-template-columns: 1fr;
+  }
+}
