@@ -1,4 +1,26 @@
 services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      API_PORT: 3000
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-filevault}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@database:5432/${POSTGRES_DB:-filevault}
+      FILEVAULT_ADMIN_EMAIL: ${FILEVAULT_ADMIN_EMAIL:?Set FILEVAULT_ADMIN_EMAIL in .env}
+      FILEVAULT_ADMIN_PASSWORD: ${FILEVAULT_ADMIN_PASSWORD:?Set FILEVAULT_ADMIN_PASSWORD in .env}
+      FILEVAULT_STORAGE_PATH: /data/files
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-1000}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET in .env}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-24}
+    depends_on:
+      - database
+    expose:
+      - "3000"
+    volumes:
+      - ${FILEVAULT_DATA_PATH:-./storage}:/data/files
+
   database:
     image: postgres:17-alpine
     environment:
