@@ -28,3 +28,6 @@ The frontend opens at `http://localhost:5173` and proxies API requests to
 
 See [local development](docs/local-development.md) for the complete setup and
 validation commands.
+
+See [NAS deployment](docs/nas-deployment.md) to run the production Compose stack
+with files stored on a NAS mount.
