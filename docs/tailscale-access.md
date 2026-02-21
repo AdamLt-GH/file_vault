@@ -69,3 +69,87 @@ browser requests with the login cookie.
 Test from mobile data or another network after connecting the client device to
 Tailscale. The File Vault login page should load, while the same address should
 not work after Tailscale is disconnected.
+
+## Add private HTTPS with Tailscale Serve
+
+Tailscale Serve can put an HTTPS address in front of the local File Vault port.
+Traffic stays inside the tailnet and Tailscale handles the certificate.
+
+First find the full MagicDNS name:
+
+```sh
+tailscale status
+```
+
+It will look similar to `file-vault-nas.example.ts.net`. Update `.env` with that
+exact origin and bind the Compose web port to localhost:
+
+```dotenv
+WEB_ORIGIN=https://file-vault-nas.example.ts.net
+WEB_BIND_ADDRESS=127.0.0.1
+WEB_PORT=8080
+```
+
+Recreate the containers, then start Serve in the background:
+
+```sh
+docker compose up -d --build api web
+sudo tailscale serve --bg http://127.0.0.1:8080
+tailscale serve status
+```
+
+Open the HTTPS address printed by `tailscale serve status`. The background flag
+makes the Serve configuration continue after the terminal closes and return
+after Tailscale or the host restarts.
+
+The localhost bind stops other LAN devices from going around the HTTPS address.
+Tailscale Serve becomes the only network path to the web container.
+
+To remove the Serve configuration:
+
+```sh
+sudo tailscale serve reset
+```
+
+After resetting it, change `WEB_BIND_ADDRESS` back to `0.0.0.0` if direct LAN or
+Tailscale IP access is still needed.
+
+## Limit who can connect
+
+Tailnet access rules also apply to Tailscale Serve. Limit the NAS or its HTTPS
+service to the user, group or devices that should reach File Vault. Keep a
+second trusted administrator device available before tightening rules so a bad
+rule does not lock out server access.
+
+Tailscale controls which devices can reach the server. File Vault still checks
+the administrator email and password and creates its own protected session.
+Both controls should remain enabled.
+
+## Troubleshooting
+
+Check the containers and the local web health endpoint first:
+
+```sh
+docker compose ps
+docker compose logs api
+curl --fail http://127.0.0.1:8080/health
+```
+
+Then check the private network and Serve state:
+
+```sh
+tailscale status
+tailscale ping another-device-name
+tailscale serve status
+```
+
+If login requests are blocked in the browser, confirm that `WEB_ORIGIN` exactly
+matches the address in the browser. The scheme, hostname and port all matter.
+Recreate the API container after changing it:
+
+```sh
+docker compose up -d --force-recreate api
+```
+
+Do not use Tailscale Funnel for this setup. Funnel makes a service reachable
+from the public internet, while Serve keeps it inside the tailnet.
