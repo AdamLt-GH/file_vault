@@ -1,110 +1,99 @@
 # Architecture
 
-File Vault uses a simple three-part setup. The React frontend talks to one
-Express API, and the API uses PostgreSQL for metadata while the uploaded files
-stay on the NAS filesystem.
+File Vault is a TypeScript monorepo with a React browser app, an Express API,
+PostgreSQL metadata and filesystem-backed file contents. Docker Compose joins
+the production services and mounts a host or NAS directory into the API.
 
-```text
-Browser
-   |
-   v
-React frontend
-   |
-   v
-Express API
-   |       |
-   v       v
-PostgreSQL NAS filesystem
-metadata   uploaded files
+## System overview
+
+```mermaid
+flowchart LR
+    Client[Browser] -->|HTTPS| Access[Tailscale Serve or trusted proxy]
+    Access --> Web[Nginx and React app]
+    Web -->|/api requests| Api[Express API]
+    Api --> Database[(PostgreSQL)]
+    Api --> Storage[(NAS file mount)]
 ```
+
+The web and API use the same public origin in production. Nginx serves the React
+assets and proxies `/api` requests to Express over the private Compose network.
+This keeps cookie and CORS handling simple and leaves the API port unpublished.
+
+PostgreSQL stores accounts, sessions, folders and file metadata. Uploaded bytes
+go to the configured filesystem mount instead of the database.
 
 ## Repository layout
 
 ```text
-apps/
-  web/       React frontend
-  api/       Express backend
-packages/
-  shared/    Types and validation shared by both apps
-docs/        Project and deployment documentation
-storage/     Local development storage, ignored by Git
+file_vault/
+├── apps/
+│   ├── api/
+│   │   ├── prisma/       database schema and migrations
+│   │   ├── src/          Express application code
+│   │   └── tests/        API and storage tests
+│   └── web/
+│       ├── src/          React application code
+│       └── tests/        browser workflow tests
+├── docs/                 setup, deployment and design notes
+├── docker-compose.yml    production services and local database
+├── package.json          npm workspace scripts
+└── tsconfig.base.json    shared TypeScript rules
 ```
 
-The project will use npm workspaces so both applications can be installed and
-checked from the repository root.
+The root npm workspace runs commands across both applications. Each app keeps
+its own runtime dependencies, build command and tests.
 
-## Frontend
+## Browser application
 
-The frontend will use React, TypeScript and Vite. React Router will handle the
-login and dashboard routes. TanStack Query will handle requests, cached server
-data and loading states. Tailwind CSS will be used for the interface.
+The React app is organised by feature:
 
-The browser will not store authentication tokens in local storage. It will use
-an HTTP-only session cookie supplied by the API.
+- `features/auth` owns login, logout, session queries and route guards.
+- `features/files` owns file requests, uploads, lists and file actions.
+- `features/folders` owns folder navigation, breadcrumbs and folder actions.
+- `features/search` owns global filename search and result paging.
+- `features/storage` owns the storage summary query and dashboard cards.
+- `components` contains small shared states and layout pieces.
+- `pages` combines features into complete routes.
 
-## Backend
+React Router maps `/login`, `/dashboard` and nested folder dashboard URLs. Route
+guards fetch the current session before showing a protected page. TanStack Query
+owns server state and invalidates the affected file, folder or summary query
+after successful changes.
 
-The backend will be one TypeScript Express application. Routes will pass work
-to controllers and services so database and storage logic do not end up in one
-large file. Zod will validate environment variables, request bodies and query
-parameters.
+The browser does not contain storage paths or database IDs that grant access by
+themselves. It asks the API for every protected operation and the API checks the
+session and owner.
 
-The API will be available under `/api/v1`. A health endpoint will be available
-without authentication, while file, folder and storage endpoints will require
-an authenticated session.
+## API application
 
-## Database
+The Express code follows a small layered structure:
 
-PostgreSQL will store the administrator account, folders and file metadata. It
-will not store uploaded file contents.
-
-The main models will be:
-
-- `AdminUser` for the single owner account
-- `Folder` for nested folders
-- `StoredFile` for names, sizes, checksums and storage keys
-- session records used by the server-side session store
-
-Prisma will handle database access and migrations.
-
-## Authentication
-
-There will be no public registration. The first administrator account will be
-created from environment variables when the database does not contain an
-administrator. The password will be hashed before it is saved and will not be
-overwritten during later application starts.
-
-The API will use server-side sessions with HTTP-only cookies. Production
-cookies will use the secure setting. Login attempts will be rate limited and
-failed logins will return the same general error message.
-
-## File storage
-
-Uploaded files will receive generated storage keys. A filename supplied by the
-owner will never be used directly as a physical path. The database will keep
-the original display name and other metadata.
-
-Storage access will go through a small provider interface. The first provider
-will use the local filesystem, which also works for a NAS directory mounted
-inside the API container.
-
-For local development, the storage path can point to an ignored directory in
-the repository. In Docker, the host path will be mounted into the API container
-and the API will only see the container path.
-
-```yaml
-services:
-  api:
-    volumes:
-      - ${FILEVAULT_STORAGE_PATH}:/app/storage
+```text
+route -> authentication middleware -> controller -> service -> Prisma or storage
 ```
 
-Uploads and downloads will use streams so large files are not loaded fully into
-memory.
+- Routes define HTTP methods and attach authentication.
+- Controllers validate request data and turn service results into HTTP responses.
+- Services hold file, folder, authentication and summary rules.
+- Prisma is the metadata and session database client.
+- The storage provider interface owns file byte reads and writes.
+- Error middleware gives clients a consistent response for unexpected failures.
 
-## Deployment
+`createApp` builds the Express application from validated environment values.
+`server.ts` handles database connection, first administrator creation, HTTP
+startup and graceful shutdown.
 
-Docker Compose will run the frontend, API and PostgreSQL services. Remote access
-will initially use Tailscale so the API does not need to be exposed directly to
-the public internet.
+## Request flow
 
+A normal protected request follows these steps:
+
+1. The browser sends the `filevault.sid` cookie with an `/api/v1` request.
+2. Express loads that session from PostgreSQL.
+3. Authentication middleware rejects the request if no user ID is present.
+4. The controller checks params, query values or JSON with Zod.
+5. A service runs the owner-scoped database or filesystem operation.
+6. The controller returns JSON, an empty success response or a download stream.
+7. TanStack Query refreshes affected dashboard data after a browser mutation.
+
+The health route is the one deliberate public API route. Compose uses it to
+decide when the API is ready before starting the web container.
