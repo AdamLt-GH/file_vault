@@ -92,3 +92,72 @@ before database or storage work begins.
 
 Errors use general client messages. Unexpected errors are handled by the API
 error middleware instead of returning stack traces as normal JSON responses.
+
+## Deployment boundaries
+
+Production sessions require HTTPS. The included Tailscale Serve setup provides
+private HTTPS and forwards the original HTTPS scheme through Nginx to Express.
+Another trusted reverse proxy can be used, but it must also send the correct
+forwarded scheme.
+
+The Compose layout keeps the API on the private container network and publishes
+only the Nginx web port. PostgreSQL is bound to `127.0.0.1` for local management
+and is not meant to accept remote network connections.
+
+For the Tailscale Serve setup, the web port is also bound to `127.0.0.1`. This
+prevents LAN clients from bypassing the HTTPS endpoint. Tailnet access rules can
+then limit which trusted users or devices reach the NAS.
+
+The storage mount should be writable only by the API container user and trusted
+NAS administrators. Database and file backups need their own access controls
+and encryption where the backup location supports it.
+
+## Secrets
+
+The `.env` file is ignored by Git and must not be added to commits or copied into
+container images. Use separate random values for:
+
+- the administrator password
+- the PostgreSQL password
+- the session secret
+
+Anyone with the session secret and access to session data may be able to attack
+active sessions. Anyone with the database password can read metadata and
+password hashes. Rotate affected secrets and sessions after suspected exposure.
+
+## Known limits
+
+The current version does not provide:
+
+- multi-factor authentication
+- a password change or account recovery screen
+- a separate CSRF token beyond same-site cookie protection and exact CORS origin
+- malware or antivirus scanning
+- application-level encryption of stored files
+- an audit trail for file and account actions
+- automatic database or file backups
+- per-file sharing links or public access controls
+- multiple users or separate storage quotas
+
+These are deliberate scope limits for a student single-owner project. They also
+mean the app should stay behind private network access and should not be treated
+as an internet-facing cloud storage product.
+
+## Deployment checklist
+
+Before storing important files:
+
+1. Replace every placeholder in `.env` with unique values.
+2. Use a private HTTPS origin and confirm the secure login cookie is created.
+3. Keep router port forwarding and Tailscale Funnel disabled.
+4. Restrict the NAS storage directory to the container user and administrators.
+5. Confirm PostgreSQL is not listening on a public interface.
+6. Upload, download and delete a test file.
+7. Back up both PostgreSQL and the file directory.
+8. Restore that backup in a separate test location.
+9. Keep the host, Docker, Tailscale and container images updated.
+10. Remove lost or unused devices from the tailnet.
+
+If the server may be exposed, stop the Compose stack, revoke untrusted tailnet
+devices, rotate the administrator password, database password and session
+secret, and review the NAS and container logs before bringing it back online.

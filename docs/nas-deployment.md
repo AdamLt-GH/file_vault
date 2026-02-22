@@ -38,7 +38,8 @@ Set these values in `.env`:
 
 ```dotenv
 NODE_ENV=production
-WEB_ORIGIN=http://192.168.1.50:8080
+WEB_ORIGIN=https://file-vault-nas.example.ts.net
+WEB_BIND_ADDRESS=127.0.0.1
 WEB_PORT=8080
 
 POSTGRES_DB=filevault
@@ -54,8 +55,13 @@ FILEVAULT_DATA_PATH=/volume1/file-vault/files
 MAX_UPLOAD_SIZE_MB=1000
 ```
 
-Replace `192.168.1.50` with the NAS address used in the browser. Keep `.env`
-private because it contains the database, account and session secrets.
+Replace the example web origin with the HTTPS address that will be used in the
+browser. The production login cookie requires HTTPS. The Tailscale guide shows
+the included private HTTPS option. An existing trusted HTTPS reverse proxy can
+also forward to port `8080`.
+
+Keep `.env` private because it contains the database, account and session
+secrets.
 
 ## Start File Vault
 
@@ -70,8 +76,8 @@ The database starts first. The API then applies pending migrations and creates
 the administrator if it does not exist. The web container starts after the API
 health check passes.
 
-Open `http://192.168.1.50:8080` and sign in with the administrator details from
-`.env`.
+Finish the HTTPS setup, open the address from `WEB_ORIGIN`, and sign in with the
+administrator details from `.env`.
 
 Useful checks:
 

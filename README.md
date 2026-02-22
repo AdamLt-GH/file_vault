@@ -34,3 +34,6 @@ with files stored on a NAS mount.
 
 See [Tailscale remote access](docs/tailscale-access.md) to reach the vault from
 trusted devices without opening a public router port.
+
+See [security decisions](docs/security.md) for the threat model, implemented
+controls, deployment boundaries and known limits.

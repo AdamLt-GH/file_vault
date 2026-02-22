@@ -29,34 +29,18 @@ tailscale ip -4
 Install Tailscale on the laptop, phone or tablet that will open File Vault, then
 sign that device in to the same tailnet.
 
-## Use the private Tailscale address
+## Check the private Tailscale address
 
-If the NAS Tailscale address is `100.80.40.20`, set the production browser
-origin in `.env`:
-
-```dotenv
-WEB_ORIGIN=http://100.80.40.20:8080
-WEB_PORT=8080
-```
-
-Recreate the API so it reads the changed origin:
+If the NAS Tailscale address is `100.80.40.20`, check that the web container is
+reachable from another tailnet device:
 
 ```sh
-docker compose up -d --build api web
+curl --fail http://100.80.40.20:8080/health
 ```
 
-Open this address from another device on the tailnet:
-
-```text
-http://100.80.40.20:8080
-```
-
-MagicDNS can be used instead of the IP address if it is enabled for the
-tailnet. In that case, use the same hostname in both `WEB_ORIGIN` and the
-browser, for example `http://file-vault-nas:8080`.
-
-Only add one exact origin to `WEB_ORIGIN`. The API checks it before allowing
-browser requests with the login cookie.
+This plain HTTP check only confirms the private network path. The production
+login cookie requires HTTPS, so complete the Tailscale Serve setup below before
+signing in.
 
 ## Keep the service private
 
@@ -66,9 +50,9 @@ browser requests with the login cookie.
 - Remove old or lost devices from the tailnet.
 - Keep the File Vault login enabled even though Tailscale limits network access.
 
-Test from mobile data or another network after connecting the client device to
-Tailscale. The File Vault login page should load, while the same address should
-not work after Tailscale is disconnected.
+Test again from mobile data or another network after the private HTTPS setup is
+finished. The File Vault login page should load while Tailscale is connected and
+stop working after the client disconnects.
 
 ## Add private HTTPS with Tailscale Serve
 
