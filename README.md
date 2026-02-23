@@ -37,3 +37,6 @@ trusted devices without opening a public router port.
 
 See [security decisions](docs/security.md) for the threat model, implemented
 controls, deployment boundaries and known limits.
+
+See [architecture](docs/architecture.md) for the system layout, data model,
+request flows, deployment design and tradeoffs.

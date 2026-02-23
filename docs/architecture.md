@@ -234,3 +234,144 @@ do not jump when two files have the same value.
 The storage summary uses database aggregates for file count, folder count,
 latest upload time and total bytes. It reports metadata totals rather than
 scanning the filesystem on every dashboard load.
+
+## Authentication flow
+
+```mermaid
+sequenceDiagram
+    participant Browser
+    participant API
+    participant PostgreSQL
+
+    Browser->>API: POST /auth/login with email and password
+    API->>PostgreSQL: find administrator by email
+    PostgreSQL-->>API: password hash
+    API->>API: verify Argon2id hash
+    API->>PostgreSQL: save server-side session
+    API-->>Browser: user JSON and HTTP-only cookie
+    Browser->>API: protected request with session cookie
+    API->>PostgreSQL: load session
+    API-->>Browser: owner-scoped response
+```
+
+There is no registration route. On first startup, the API creates one
+administrator from environment values if the database has no administrator.
+Later restarts leave that account unchanged.
+
+The browser asks `/auth/session` for the current user. Signed-out routes send an
+active session to the dashboard, while protected routes send a missing session
+to login. The browser stores no bearer token or password.
+
+## Browser cache rules
+
+TanStack Query keys follow the resource being displayed:
+
+- session queries use one shared authentication key
+- file lists include the current folder and list options
+- folder lists include the current parent folder
+- folder trees and breadcrumbs have separate keys
+- searches include text and page number
+- storage totals use a single summary key
+
+Mutation success handlers invalidate the smallest useful key prefix. For
+example, a file upload refreshes the current folder and storage summary. Moving
+a file refreshes its current list. Creating or deleting a folder refreshes its
+parent and the summary.
+
+The server remains the source of truth. The current interface does not use
+optimistic file or folder changes because a storage or database operation can
+still fail after the button is pressed.
+
+## Production deployment
+
+```mermaid
+flowchart TB
+    Tailnet[Tailscale client] --> Serve[Tailscale Serve HTTPS]
+    Serve -->|localhost 8080| Nginx[Nginx web container]
+    Nginx -->|private network| API[Node API container]
+    API --> DB[(PostgreSQL volume)]
+    API --> NAS[(Host or NAS bind mount)]
+```
+
+Compose starts services by health:
+
+1. PostgreSQL accepts connections.
+2. The API entrypoint applies pending Prisma migrations.
+3. The API connects, creates the first administrator if needed and serves its
+   health route.
+4. Nginx starts after the API becomes healthy.
+
+The API image builds TypeScript in one stage and runs compiled JavaScript in a
+smaller production stage. The web image builds Vite assets and copies them into
+Nginx. Nginx handles React route fallback, long-lived asset caching and streamed
+API proxying.
+
+PostgreSQL uses a named Docker volume. File contents use a bind mount because a
+NAS path must stay visible and manageable outside Docker. This also keeps large
+file data out of container layers and PostgreSQL backups.
+
+## Main design choices
+
+### One API application
+
+Authentication, metadata and storage operations live in one Express service.
+This is easier to understand and deploy than separate services for a
+single-owner portfolio project. The service boundaries in the code still keep
+storage and database rules replaceable.
+
+### Database metadata and filesystem bytes
+
+PostgreSQL is good at relationships, ownership, search and sorting. A filesystem
+or NAS is better suited to large byte streams. Splitting them keeps both jobs
+simple, but it means backups and consistency checks must cover two data stores.
+
+### Server-side sessions
+
+Server sessions allow immediate logout and avoid putting account claims in a
+browser-managed token. They require a shared persistent session store, which is
+why PostgreSQL is also used by `express-session`.
+
+### Sequential multi-file uploads
+
+The browser uploads selected files one at a time. This gives simple combined
+progress and avoids several large concurrent streams overwhelming a small NAS.
+The tradeoff is lower throughput when many small files are selected.
+
+### No destructive folder cascade
+
+Folders must be empty before deletion. This adds steps when removing a large
+tree, but it makes an accidental folder click unable to erase all nested files.
+
+### Private access first
+
+The production design uses private HTTPS through Tailscale rather than public
+sharing. This matches the single-owner goal and reduces exposed surface area.
+It also means every client needs tailnet access before it can reach File Vault.
+
+## Failure handling
+
+The API exits when startup validation, database connection or administrator
+bootstrap fails. Compose restarts it and health checks stop Nginx from treating
+an unhealthy API as ready.
+
+At request time, expected validation and conflict cases use specific status
+codes. Unexpected errors reach the shared error handler. The frontend keeps
+loading, empty and error states separate and offers retries for dashboard reads.
+
+Current observability is intentionally small: container logs and health routes.
+A larger deployment could add structured logs, metrics, storage reconciliation
+and alerts without changing the browser API shape.
+
+## Extension points
+
+The clearest future extension points are:
+
+- another `StorageProvider` for S3-compatible or remote object storage
+- account settings for password rotation and multi-factor authentication
+- background jobs for malware scanning and storage reconciliation
+- audit records for login and file actions
+- resumable or chunked uploads for unstable connections
+- shared folders or links with a separate permission model
+
+These features are outside the first stable single-owner release and would need
+new security and data-consistency decisions before implementation.
