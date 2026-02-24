@@ -184,17 +184,61 @@ The normal down command keeps both the PostgreSQL volume and the mounted file
 directory. Do not use `docker compose down --volumes` unless deleting the
 database is intended.
 
-See [local development](docs/local-development.md) for the complete setup and
-validation commands.
+## Checks and tests
 
-See [NAS deployment](docs/nas-deployment.md) to run the production Compose stack
-with files stored on a NAS mount.
+Run every project check from the repository root:
 
-See [Tailscale remote access](docs/tailscale-access.md) to reach the vault from
-trusted devices without opening a public router port.
+```sh
+npm run typecheck
+npm test
+npm run build
+```
 
-See [security decisions](docs/security.md) for the threat model, implemented
-controls, deployment boundaries and known limits.
+The test suite currently covers:
 
-See [architecture](docs/architecture.md) for the system layout, data model,
-request flows, deployment design and tradeoffs.
+- environment and authentication behaviour
+- local filesystem storage operations
+- upload validation, streaming metadata and cleanup
+- file listing, downloads, deletion, rename and move rules
+- nested folder creation, breadcrumbs, rename and safe deletion
+- storage summary aggregation
+- login navigation and protected browser routes
+- browser file rows, downloads, sorting, paging, search and deletion
+
+API tests use Supertest and focused Prisma or storage doubles. Browser tests use
+Testing Library with mocked HTTP responses. Local filesystem tests write only to
+temporary directories and clean them afterwards.
+
+## Documentation
+
+- [Local development](docs/local-development.md) has the complete setup and
+  validation flow.
+- [NAS deployment](docs/nas-deployment.md) covers mounts, permissions, updates,
+  backup and restore.
+- [Tailscale remote access](docs/tailscale-access.md) configures private HTTPS
+  without a public router port.
+- [Security decisions](docs/security.md) lists the threat model, controls,
+  deployment boundaries and known limits.
+- [Architecture](docs/architecture.md) explains the data model, request flows,
+  deployment design and tradeoffs.
+- [Project scope](docs/project-scope.md) records the original first-release
+  boundaries.
+
+## Current limits
+
+File Vault is intentionally a single-owner project. It does not yet include
+multi-factor authentication, password recovery, sharing links, malware
+scanning, audit logs, automatic backups or application-level file encryption.
+The security document covers these limits in more detail.
+
+The next useful improvements would be password rotation, storage reconciliation
+checks, resumable uploads and better automated accessibility coverage. Public
+sharing or multiple accounts would need a separate permission model rather than
+being added as a small UI change.
+
+## Status
+
+The main first-release scope is complete and the repository is being prepared
+for its first stable tag. The application builds and runs locally, includes a
+production Compose deployment, and has separate guides for NAS and Tailscale
+use.
