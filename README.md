@@ -41,6 +41,53 @@ File Vault is a student portfolio project, not a commercial replacement for a
 hosted cloud-storage platform. It is designed for one trusted owner on private
 infrastructure.
 
+## Tech stack
+
+| Area | Tools |
+| --- | --- |
+| Frontend | React, TypeScript, Vite, React Router, TanStack Query, Tailwind CSS |
+| API | Node.js, Express, TypeScript, Zod, Busboy |
+| Data | PostgreSQL, Prisma, connect-pg-simple |
+| Security | Argon2id, server-side sessions, Helmet, CORS, login rate limiting |
+| Testing | Vitest, Testing Library, Supertest |
+| Deployment | Docker, Docker Compose, Nginx, Tailscale |
+
+The repository uses npm workspaces for the API and web app. Root scripts run
+builds, type checks and tests across both workspaces.
+
+## How it is put together
+
+```text
+Browser
+  -> Tailscale Serve or another trusted HTTPS proxy
+  -> Nginx serving React and proxying /api
+  -> Express API
+       -> PostgreSQL for users, sessions, folders and file metadata
+       -> mounted filesystem for uploaded file contents
+```
+
+Keeping metadata in PostgreSQL makes owner checks, folder relationships, search
+and sorting straightforward. Keeping file contents on the filesystem means the
+NAS can handle large byte streams without putting them in database rows.
+
+The API is split into routes, controllers, services and a storage-provider
+interface. The React app is split by auth, files, folders, search and storage
+summary features. TanStack Query owns remote state and refreshes affected lists
+after successful changes.
+
+## Technical details I wanted to practise
+
+- Streaming multipart uploads with a configurable size limit
+- SHA-256 checksums calculated during the file write
+- Extension, reported MIME type and detectable content checks
+- Random physical storage keys instead of user filenames as paths
+- Server sessions stored in PostgreSQL with secure production cookies
+- Owner-scoped database queries even in a single-account app
+- Recursive folder relationships with guarded breadcrumb traversal
+- Paginated and stable sorting for folder lists and filename search
+- Multi-stage production images and health-based Compose startup
+- Unit, API and browser workflow tests
+
 ## Local setup
 
 1. Install Node.js 22, npm and Docker.
