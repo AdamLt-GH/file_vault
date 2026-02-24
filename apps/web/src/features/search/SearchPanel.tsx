@@ -52,8 +52,8 @@ export function SearchPanel() {
               <h2>Search results</h2>
               <p>
                 {results.data
-                  ? `${results.data.total} result${results.data.total === 1 ? "" : "s"} for \"${query}\"`
-                  : `Looking for \"${query}\"`}
+                  ? `${results.data.total} result${results.data.total === 1 ? "" : "s"} for "${query}"`
+                  : `Looking for "${query}"`}
               </p>
             </div>
           </div>

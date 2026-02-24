@@ -104,7 +104,9 @@ export function validateUploadFilename(filename: string): string {
     normalisedFilename.length > 255 ||
     normalisedFilename.includes("/") ||
     normalisedFilename.includes("\\") ||
-    /[\0-\x1f]/.test(normalisedFilename)
+    Array.from(normalisedFilename).some(
+      (character) => character.charCodeAt(0) < 32,
+    )
   ) {
     throw new UploadValidationError("The filename is not valid", "INVALID_FILENAME");
   }

@@ -26,7 +26,7 @@ export function validateFolderName(name: string): string {
     normalisedName === ".." ||
     normalisedName.includes("/") ||
     normalisedName.includes("\\") ||
-    /[\0-\x1f]/.test(normalisedName)
+    Array.from(normalisedName).some((character) => character.charCodeAt(0) < 32)
   ) {
     throw new FolderError("The folder name is not valid", "INVALID_FOLDER_NAME");
   }

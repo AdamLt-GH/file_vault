@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { Sidebar } from "../components/Sidebar";
@@ -21,19 +21,22 @@ import { StorageSummaryCards } from "../features/storage/StorageSummaryCards";
 export function DashboardPage() {
   const session = useSession();
   const { folderId } = useParams();
-  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ folderId, page: 1 });
+  const page = pagination.folderId === folderId ? pagination.page : 1;
   const [sortBy, setSortBy] = useState<FileSort>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const files = useFiles(folderId, { page, sortBy, sortDirection });
   const folders = useFolders(folderId);
   const breadcrumbs = useBreadcrumbs(folderId);
 
-  useEffect(() => setPage(1), [folderId]);
-
   function changeSort(nextSort: FileSort, nextDirection: SortDirection) {
-    setPage(1);
+    setPagination({ folderId, page: 1 });
     setSortBy(nextSort);
     setSortDirection(nextDirection);
+  }
+
+  function changePage(nextPage: number) {
+    setPagination({ folderId, page: nextPage });
   }
 
   return (
@@ -83,7 +86,7 @@ export function DashboardPage() {
                 parentFolderId={folderId}
               />
               <FileListControls
-                onPageChange={setPage}
+                onPageChange={changePage}
                 onSortChange={changeSort}
                 page={files.data.page}
                 sortBy={sortBy}
