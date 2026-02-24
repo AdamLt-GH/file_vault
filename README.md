@@ -88,18 +88,101 @@ after successful changes.
 - Multi-stage production images and health-based Compose startup
 - Unit, API and browser workflow tests
 
-## Local setup
+## Run it locally
 
-1. Install Node.js 22, npm and Docker.
-2. Copy `.env.example` to `.env` and replace every placeholder value.
-3. Install the workspaces with `npm install`.
-4. Start PostgreSQL with `npm run db:up`.
-5. Apply migrations with `npm run db:migrate --workspace @file-vault/api`.
-6. Start the API with `npm run dev:api`.
-7. Start the frontend in another terminal with `npm run dev:web`.
+You need Node.js 22 or later, npm and Docker with Docker Compose.
 
-The frontend opens at `http://localhost:5173` and proxies API requests to
-`http://localhost:3000`.
+Clone the repository, prepare the environment and install both workspaces:
+
+```sh
+git clone https://github.com/AdamLt-GH/file_vault.git
+cd file_vault
+cp .env.example .env
+npm install
+```
+
+Replace the placeholder database password, administrator password and session
+secret in `.env`. Keep `NODE_ENV=development` and
+`WEB_ORIGIN=http://localhost:5173` for local work.
+
+Start PostgreSQL and prepare Prisma:
+
+```sh
+npm run db:up
+npm run prisma:generate --workspace @file-vault/api
+npm run db:deploy --workspace @file-vault/api
+```
+
+Start the API:
+
+```sh
+npm run dev:api
+```
+
+Start the browser app in another terminal:
+
+```sh
+npm run dev:web
+```
+
+Open `http://localhost:5173`. Vite proxies API requests to
+`http://localhost:3000`. The administrator is created only when the database
+does not already contain one.
+
+Stop PostgreSQL when finished:
+
+```sh
+npm run db:down
+```
+
+## Important environment values
+
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | PostgreSQL connection used by local API commands |
+| `FILEVAULT_ADMIN_EMAIL` | Email used for the first administrator |
+| `FILEVAULT_ADMIN_PASSWORD` | Password used only when creating that administrator |
+| `SESSION_SECRET` | Signs the session cookie and must be at least 32 characters |
+| `SESSION_TTL_HOURS` | Rolling session lifetime from 1 to 168 hours |
+| `FILEVAULT_STORAGE_PATH` | Local filesystem path used by the API process |
+| `FILEVAULT_DATA_PATH` | Host or NAS path mounted by Docker Compose |
+| `MAX_UPLOAD_SIZE_MB` | Maximum size accepted for one uploaded file |
+| `WEB_ORIGIN` | Exact browser origin accepted by CORS and cookies |
+
+## Production with Docker Compose
+
+For the included NAS setup, use an HTTPS browser origin and a real host storage
+path in `.env`:
+
+```dotenv
+NODE_ENV=production
+WEB_ORIGIN=https://file-vault-nas.example.ts.net
+WEB_BIND_ADDRESS=127.0.0.1
+WEB_PORT=8080
+FILEVAULT_DATA_PATH=/volume1/file-vault/files
+```
+
+Then build and start the stack:
+
+```sh
+docker compose up -d --build
+docker compose ps
+```
+
+The API container applies pending migrations before startup. Compose waits for
+PostgreSQL and the API health endpoint before starting the web container.
+
+Useful production commands:
+
+```sh
+docker compose logs -f api
+docker compose logs -f web
+docker compose down
+```
+
+The normal down command keeps both the PostgreSQL volume and the mounted file
+directory. Do not use `docker compose down --volumes` unless deleting the
+database is intended.
 
 See [local development](docs/local-development.md) for the complete setup and
 validation commands.
