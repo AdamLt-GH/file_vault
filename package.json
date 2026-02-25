@@ -5,8 +5,7 @@
   "type": "module",
   "description": "A private, self-hosted file storage application for a single owner.",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "engines": {
     "node": ">=22.0.0"

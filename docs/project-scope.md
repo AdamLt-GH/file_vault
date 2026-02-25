@@ -11,7 +11,7 @@ still showing full-stack development, security, testing and deployment work.
 
 ## Main features
 
-File Vault will allow the owner to:
+File Vault allows the owner to:
 
 - log in and log out
 - create and browse nested folders
@@ -23,7 +23,7 @@ File Vault will allow the owner to:
 
 ## Security goals
 
-The project will include:
+The first release includes:
 
 - a single administrator account with a hashed password
 - HTTP-only authentication cookies
@@ -64,6 +64,5 @@ goal.
 4. Add multiple uploads, progress, search, sorting and storage summaries.
 5. Finish Docker deployment, NAS instructions, security notes and the README.
 
-Each milestone should pass linting, TypeScript checks and useful automated tests
-before the next one starts.
-
+All five milestones are complete for the first release. Each workspace passes
+linting, TypeScript checks, automated tests and a production build.
