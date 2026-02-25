@@ -1,6 +1,6 @@
 {
   "name": "file-vault",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "A private, self-hosted file storage application for a single owner.",

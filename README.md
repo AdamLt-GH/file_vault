@@ -223,6 +223,9 @@ temporary directories and clean them afterwards.
   deployment design and tradeoffs.
 - [Project scope](docs/project-scope.md) records the original first-release
   boundaries.
+- [Release checklist](docs/release-checklist.md) records the checks used before
+  creating a stable tag.
+- [Changelog](CHANGELOG.md) lists the features included in each release.
 
 ## Current limits
 
@@ -238,7 +241,6 @@ being added as a small UI change.
 
 ## Status
 
-The main first-release scope is complete and the repository is being prepared
-for its first stable tag. The application builds and runs locally, includes a
-production Compose deployment, and has separate guides for NAS and Tailscale
-use.
+Version `1.0.0` is the first stable single-owner release. The application builds
+and runs locally, includes a production Compose deployment, and has separate
+guides for NAS and Tailscale use.
